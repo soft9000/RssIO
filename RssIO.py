@@ -1,7 +1,9 @@
 #!/usr/bin/env python3
 # RssIO.py: A friendly, neighborhood RSS feed reader / writer.
-# Shared 2025/01/21 by Randall Nagy
-# Rev 1.0
+# Rev 1.01
+
+# 2025/01/21: Created + shared at https://github.com/soft9000/RssIO
+# 2025/01/22: Added support for channel <generator/>
 
 # CAVEAT: Whilst pubDates are not required, when not present pubDates will be 
 # slapped 'oer every channel and item within every feed / item therein. 
@@ -58,16 +60,23 @@ class RSSItem:
 
 
 class RSSFeed:
+    this_project = 'https://github.com/soft9000/RssIO'
+
     def __init__(self, title, link, description, date_str=time.ctime()):
         self._title = title
         self._link = link
         self._description = description
+        self._generator = RSSFeed.this_project
         try:
             _ = email.utils.parsedate_to_datetime(date_str)
             self._pubDate = date_str
         except:
             self._pubDate = time.ctime()
         self._items = []
+    
+    def use_default_generator(self):
+        ''' Use the default project string as the generator tag.'''
+        self.generator = RSSFeed.this_project
 
     @property
     def title(self):
@@ -94,6 +103,14 @@ class RSSFeed:
         self._description = value
 
     @property
+    def generator(self):
+        return self._generator
+
+    @generator.setter
+    def generator(self, value):
+        self._generator = value
+
+    @property
     def pubDate(self):
         return self._pubDate
 
@@ -104,13 +121,13 @@ class RSSFeed:
     def add_item(self, item):
         self._items.append(item)
 
-
     def to_string(self):
         rss = ET.Element('rss', version='2.0')
         channel = ET.SubElement(rss, 'channel')
         ET.SubElement(channel, 'title').text = self._title
         ET.SubElement(channel, 'link').text = self._link
         ET.SubElement(channel, 'description').text = self._description
+        ET.SubElement(channel, 'generator').text = self._generator
         ET.SubElement(channel, 'pubDate').text = self._pubDate
         for item in self._items:
             item_elem = ET.SubElement(channel, 'item')
@@ -132,11 +149,17 @@ class RSSFeed:
         feed._title = root.find('channel/title').text
         feed._link = root.find('channel/link').text
         feed._description = root.find('channel/description').text
+
+        generator = root.find('channel/generator')
+        if generator is not None:
+            feed._generator = generator.text
+
         feed._pubDate = root.find('channel/pubDate')
-        if not feed.pubDate:
+        if feed._pubDate is None:
             feed._pubDate = time.ctime()    # use today's date
         else:
             feed._pubDate = feed.pubDate.text
+
         feed._items = []
         for item in root.findall('channel/item'):
             title = item.find('title').text
@@ -151,12 +174,14 @@ class RSSFeed:
 
     @staticmethod
     def save(feed, filename):
+        feed.use_default_generator()
         xstring = RSSFeed.to_string(feed)
         with open(filename, 'w') as f:
             f.write(xstring)
 
 
 if __name__ == '__main__':
-    myFeed = RSSFeed.load(r"C:\d_drive\USR\sites\aws.2024\Soft9000.rnd\nexus.rss")
-    # RSSFeed.save(myFeed, r"C:\d_drive\USR\sites\aws.2024\Soft9000.rnd\testing.rss")
+    myFeed = RSSFeed.load("./RssIO/nexus.rss")
+    RSSFeed.save(myFeed, "testing.rss")
+    myFeed.use_default_generator()
     print(myFeed.to_string())
