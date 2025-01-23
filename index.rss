@@ -1,0 +1,28 @@
+<?xml version="1.0" ?>
+<rss version="2.0">
+  <channel>
+    <title>Testing Success</title>
+    <link>A feed test for the manual creation</link>
+    <description>./test_out/index.rss</description>
+    <generator>https://github.com/soft9000/RssIO</generator>
+    <pubDate>Thu Jan 23 12:27:23 2025</pubDate>
+    <item>
+      <title>zTitle for fred</title>
+      <link>fred</link>
+      <description>zDescr for fred</description>
+      <pubDate>Thu Jan 23 12:27:23 2025</pubDate>
+    </item>
+    <item>
+      <title>zTitle for ralph</title>
+      <link>ralph</link>
+      <description>zDescr for ralph</description>
+      <pubDate>Thu Jan 23 12:27:23 2025</pubDate>
+    </item>
+    <item>
+      <title>zTitle for joe</title>
+      <link>joe</link>
+      <description>zDescr for joe</description>
+      <pubDate>Thu Jan 23 12:27:23 2025</pubDate>
+    </item>
+  </channel>
+</rss>

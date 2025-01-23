@@ -1,19 +1,25 @@
 #!/usr/bin/env python3
 # RssIO.py: A friendly, neighborhood RSS feed reader / writer.
-# Rev 1.01
+# Rev 1.02
+# Status: Ready for prime time.
 
 # 2025/01/21: Created + shared at https://github.com/soft9000/RssIO
 # 2025/01/22: Added support for channel <generator/>
+# 2025/01/23: Unified re-usage. Common verifications.
 
 # CAVEAT: Whilst pubDates are not required, when not present pubDates will be 
 # slapped 'oer every channel and item within every feed / item therein. 
 # It's a feature / feel free to update your final as required.
 
+import os
+import os.path
 import time
 from datetime import datetime
 import email.utils
 
 import xml.etree.ElementTree as ET
+
+from RssExceptions import RssException
 
 class RSSItem:
     def __init__(self, title, link, description, date_str=time.ctime()):
@@ -26,6 +32,19 @@ class RSSItem:
         except:
             self._pubDate = time.ctime()
 
+    def is_robust(self):
+        ''' A simple test to see if the item is ready for prime time.'''
+        return self._title and self._link and self._description
+   
+    def try_pubDate(self, date_str)->bool:
+        ''' Attempt to set the pubDate. Return True if successful.'''
+        try:
+            _ = email.utils.parsedate_to_datetime(date_str)
+            self._pubDate = date_str
+            return True
+        except:
+            return False
+
     @property
     def title(self):
         return self._title
@@ -59,48 +78,30 @@ class RSSItem:
         self._pubDate = value
 
 
-class RSSFeed:
+class RSSFeed(RSSItem):
     this_project = 'https://github.com/soft9000/RssIO'
 
     def __init__(self, title, link, description, date_str=time.ctime()):
-        self._title = title
-        self._link = link
-        self._description = description
+        super().__init__(title, link, description, date_str)
         self._generator = RSSFeed.this_project
-        try:
-            _ = email.utils.parsedate_to_datetime(date_str)
-            self._pubDate = date_str
-        except:
-            self._pubDate = time.ctime()
         self._items = []
-    
+
+    def is_robust(self):
+        ''' A simple test to see if the feed header is ready for prime time.'''
+        return self._title and self._link and self._description
+
     def use_default_generator(self):
         ''' Use the default project string as the generator tag.'''
         self.generator = RSSFeed.this_project
-
-    @property
-    def title(self):
-        return self._title
-
-    @title.setter
-    def title(self, value):
-        self._title = value
-
-    @property
-    def link(self):
-        return self._link
-
-    @link.setter
-    def link(self, value):
-        self._link = value
-
-    @property
-    def description(self):
-        return self._description
-
-    @description.setter
-    def description(self, value):
-        self._description = value
+    
+    def try_pubDate(self, date_str)->bool:
+        ''' Attempt to set the pubDate. Return True if successful.'''
+        try:
+            _ = email.utils.parsedate_to_datetime(date_str)
+            self._pubDate = date_str
+            return True
+        except:
+            return False
 
     @property
     def generator(self):
@@ -110,16 +111,12 @@ class RSSFeed:
     def generator(self, value):
         self._generator = value
 
-    @property
-    def pubDate(self):
-        return self._pubDate
-
-    @pubDate.setter
-    def pubDate(self, value):
-        self._pubDate = value
-
-    def add_item(self, item):
+    def add_item(self, item)->bool:
+        ''' Add an ROBUST item to the feed. Returns False if the item is not robust.'''
+        if not item or not item.is_robust():
+            return False
         self._items.append(item)
+        return True
 
     def to_string(self):
         rss = ET.Element('rss', version='2.0')
@@ -144,6 +141,8 @@ class RSSFeed:
     @staticmethod
     def load(filename):
         feed = RSSFeed(None, None, None)
+        if not os.path.exists(filename):
+            return None
         tree = ET.parse(filename)
         root = tree.getroot()
         feed._title = root.find('channel/title').text
@@ -178,10 +177,21 @@ class RSSFeed:
         xstring = RSSFeed.to_string(feed)
         with open(filename, 'w') as f:
             f.write(xstring)
+        return True
 
 
 if __name__ == '__main__':
     myFeed = RSSFeed.load("./RssIO/nexus.rss")
+    if myFeed is None:
+        myFeed = RSSFeed.load("nexus.rss")
+    if myFeed is None:
+        raise RssException("Failed to load the feed.")
+
+    if os.path.exists("testing.rss"):
+        os.unlink("testing.rss")
     RSSFeed.save(myFeed, "testing.rss")
     myFeed.use_default_generator()
     print(myFeed.to_string())
+
+    if myFeed.is_robust():
+        print("Feed is robust.")
