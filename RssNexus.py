@@ -97,7 +97,6 @@ class NexusFile:
             ofile =  self.get_output_file(out_dir)
             if not ofile:
                 return False
-            print('Creating: ' + ofile)
             with open(ofile, 'w') as fh:
                 fh.write(content)
             return True
@@ -162,15 +161,23 @@ class NexusFolder:
         return False
     
     def home_out(self, file_name:str) -> str:
-        ''' Get the fully qualified file name for the output folder. '''
-        return self.out_dir + '/' + file_name
+        ''' Get the fully qualified file name for the parent folder. '''
+        if not file_name or self.is_null():
+            return None
+        if self.out_dir.find('/') == -1:
+            return './' + file_name     # root is best 
+        nodes = self.out_dir.split('/')
+        nodes = nodes[:-1]
+        nodes.append(file_name)
+        return './' + '/'.join(nodes)    # parent is bests
+
     
 
 from RssExceptions import RssException
 class RSSNexus:
     ''' The RSSNexus is the heart of the RSS feed generator. '''
     def __init__(self, project:NexusFolder, template:RssTemplateFile):
-        self.project = project
+        self.folders = project
         self.nexus_files = []
         self.template = template
         self.rss_item = None
@@ -194,7 +201,7 @@ class RSSNexus:
         ''' Raise an exception if this Nexus is not valid. '''
         if not self.rss_item or not self.rss_item.is_robust():
             raise RssException("Error 001: Cannel metadata has not been assigned to this Nexus.")
-        if not self.project or self.project.is_null():
+        if not self.folders or self.folders.is_null():
             raise RssException("Error 002: Nexus project has not been assigned.")
         if not self.template or not self.template.exists():
             raise RssException("Error 003: Nexus is not valid.")
@@ -208,30 +215,31 @@ class RSSNexus:
         self.validate()
         rss_feed = RSSFeed(self.rss_item.title,self.rss_item.description,self.rss_item.link,self.rss_item.pubDate)
         for ss, file_item in enumerate(self.nexus_files):
-            if not file_item.create_output(self.template, self.project.out_dir):
+            if not file_item.create_output(self.template, self.folders.out_dir):
                 raise RssException(f'Error 100: Unable to create output for RSS Item {ss} "{file_item.get_item().title}".')
             zitem = file_item.get_item()
-            zitem.link = web_root_url + '/' + file_item.get_output_file(self.project.out_dir)
+            zitem.link = web_root_url + '/' + file_item.get_output_file(self.folders.out_dir)
             rss_feed.add_item(zitem)
-        home_rss = self.project.home_out('index.rss')
+        home_rss = self.folders.home_out('index.rss')
+        rss_feed.link = web_root_url + '/' + 'index.rss'
         if not RSSFeed.save(rss_feed, home_rss):
             raise RssException('Error 101: Unable to create the RSS meta-file.')
         return True
 
 if __name__ == '__main__':
     debug = False
-    print('RSSNexus: A friendly, neighborhood RSS feed reader / writer.')
-    print('Rev 0.01')
+    print('RSSNexus: An multi=template RSS content skinner + static feed burner.')
+    print('Rev 0.02')
 
     # STEP: SETUP NEXUS FOLDERS
-    test_nexus = NexusFolder()
-    if not test_nexus.assign('test_in', 'test_out', 'test_template'):
+    nexus_folders = NexusFolder()
+    if not nexus_folders.assign('test_in', 'test_out', 'test_template'):
         raise RssException('Error: Unable to assign Nexus folders.')
-    if not test_nexus.makedirs():
+    if not nexus_folders.makedirs():
         raise RssException('Error: Unable to create Nexus folders.')
     
     # STEP: TEST TEMPLATE FILE MERGE
-    test_template = RssTemplateFile(test_nexus.template_dir + '/test_template.txt')
+    test_template = RssTemplateFile(nexus_folders.template_dir + '/test_template.txt')
     if not test_template.create_template_file('Hello, ', '!'):
         raise RssException('Error: Unable to create template file.')
     content = test_template.merge_with('World')
@@ -239,16 +247,16 @@ if __name__ == '__main__':
         raise RssException('Error: Unable to merge template file.')
 
     rss_feed= RSSFeed("Testing Success", "A feed test for the manual creation", "./test_out/index.rss")
-    rss_nexus = RSSNexus(test_nexus, test_template)    
+    rss_nexus = RSSNexus(nexus_folders, test_template)    
     # STEP: TEST FILE MULI-FILE CONTENT FILE CREATIONS (NO RSS)
     for content in "fred", "ralph", "joe":
-        content_file = test_nexus.in_dir + '/' + content + '.txt'
+        content_file = nexus_folders.in_dir + '/' + content + '.txt'
         with open(content_file, 'w') as fh:
             fh.write(content)
         nexus_file = NexusFile(content_file)
         if not nexus_file.set_item('zTitle for ' + content, 'zDescr for ' + content, content):
             raise RssException('Error: Unable to set RSS item.')
-        if not nexus_file.create_output(test_template, test_nexus.out_dir):
+        if not nexus_file.create_output(test_template, nexus_folders.out_dir):
             raise RssException('Error: Unable to create RSS output.')
         rss_feed.add_item(nexus_file.get_item()) # for the next test
         rss_nexus.add_item(nexus_file)
@@ -260,6 +268,18 @@ if __name__ == '__main__':
     rss_nexus.set_meta(rss_feed)
     rss_nexus.generate('https://www.soft9000.com',True)
 
+    funko = RSSNexus(nexus_folders, test_template)
+    ref = funko.folders.out_dir 
+    funko.folders.out_dir = 'a/b/c'
+    foo = funko.folders.home_out('index.rss')
+    if foo != './a/b/index.rss':
+        raise RssException('Error: Unable to create parented home_out.')
+    funko.folders.out_dir = 'a'
+    foo = funko.folders.home_out('index.rss')
+    if foo != './index.rss':
+        raise RssException('Error: Unable to create rooted home_out.')
+    funko.folders.out_dir = ref
+    
     # STEP: TEST RSSNexus CONTENT DETECTION
 
     # STEP: TEST RSS UPDATE
@@ -267,7 +287,7 @@ if __name__ == '__main__':
     # STEP: VERIFY RSSNexus FILE SKINNING
     
     # STEP: POST-TEST CLEANUP
-    if not debug and not test_nexus.rmtree():
+    if not debug and not nexus_folders.rmtree():
         raise RssException('Error: Unable to remove Nexus test folders.')
 
     print('Status: Testing Success.')

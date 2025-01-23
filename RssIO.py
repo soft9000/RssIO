@@ -22,7 +22,7 @@ import xml.etree.ElementTree as ET
 from RssExceptions import RssException
 
 class RSSItem:
-    def __init__(self, title, link, description, date_str=time.ctime()):
+    def __init__(self, title, description, link, date_str=time.ctime()):
         self._title = title
         self._link = link
         self._description = description

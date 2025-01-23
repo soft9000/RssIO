@@ -2,27 +2,27 @@
 <rss version="2.0">
   <channel>
     <title>Testing Success</title>
-    <link>A feed test for the manual creation</link>
-    <description>./test_out/index.rss</description>
+    <link>https://www.soft9000.com/index.rss</link>
+    <description>A feed test for the manual creation</description>
     <generator>https://github.com/soft9000/RssIO</generator>
-    <pubDate>Thu Jan 23 12:27:23 2025</pubDate>
+    <pubDate>Thu Jan 23 16:29:35 2025</pubDate>
     <item>
       <title>zTitle for fred</title>
-      <link>fred</link>
+      <link>https://www.soft9000.com/test_out/fred.html</link>
       <description>zDescr for fred</description>
-      <pubDate>Thu Jan 23 12:27:23 2025</pubDate>
+      <pubDate>Thu Jan 23 16:29:35 2025</pubDate>
     </item>
     <item>
       <title>zTitle for ralph</title>
-      <link>ralph</link>
+      <link>https://www.soft9000.com/test_out/ralph.html</link>
       <description>zDescr for ralph</description>
-      <pubDate>Thu Jan 23 12:27:23 2025</pubDate>
+      <pubDate>Thu Jan 23 16:29:35 2025</pubDate>
     </item>
     <item>
       <title>zTitle for joe</title>
-      <link>joe</link>
+      <link>https://www.soft9000.com/test_out/joe.html</link>
       <description>zDescr for joe</description>
-      <pubDate>Thu Jan 23 12:27:23 2025</pubDate>
+      <pubDate>Thu Jan 23 16:29:35 2025</pubDate>
     </item>
   </channel>
 </rss>
