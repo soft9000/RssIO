@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 # RssIO.py: A friendly, neighborhood RSS feed reader / writer.
-# Rev 1.02
+# Rev 1.03
 # Status: Ready for prime time.
 
 # 2025/01/21: Created + shared at https://github.com/soft9000/RssIO
@@ -81,8 +81,8 @@ class RSSItem:
 class RSSFeed(RSSItem):
     this_project = 'https://github.com/soft9000/RssIO'
 
-    def __init__(self, title, link, description, date_str=time.ctime()):
-        super().__init__(title, link, description, date_str)
+    def __init__(self, title, description, link, date_str=time.ctime()):
+        super().__init__(title, description, link, date_str)
         self._generator = RSSFeed.this_project
         self._items = []
 

@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 # RSSNexus.py: An multi=template RSS content skinner + static feed burner.
-# Rev 0.01
+# Rev 0.03
 # Status: Work in progress.
 
 # 2025/01/23: Created + shared at https://github.com/soft9000/RssIO
@@ -16,10 +16,13 @@
 import os
 import os.path
 import shutil
+from Files import *
 from RssIO import RSSItem, RSSFeed
 from RssTemplate import RssTemplateFile
 
 class NexusFile:
+    FILE_TYPE = FileTypes.NexusFileType
+
     def __init__(self, content_file:str):
         ''' Create a NexusFile with a template. NexusFile will not be ready until the
         RSSItem is_robust, which it ain't when we're initialized. '''
@@ -58,7 +61,7 @@ class NexusFile:
             return False
         return self._rss_item.is_robust()
     
-    def get_output_file(self, out_dir, suffix='.html') -> str:
+    def get_output_file(self, out_dir, suffix=FILE_TYPE) -> str:
         '''Qualify + test the creation of the output file in the `out_dir`.'''
         if not self.is_ready() or not out_dir or not os.path.exists(out_dir):
             return None
@@ -144,6 +147,20 @@ class NexusFolder:
                     return False
         return True
     
+    def create_folders(self, root_dir:str) -> bool:
+        ''' Create the Nexus folders. '''
+        if not root_dir:
+            return False
+        for foo in self.in_dir, self.out_dir, self.template_dir:
+            if not foo:
+                return False
+            if not os.path.exists(foo):
+                try:
+                    os.makedirs(root_dir + '/' + foo)
+                except:
+                    return False
+        return True
+    
     def exists(self) -> bool:
         ''' Make sure that the folders exist. '''
         if self.is_null():
@@ -181,6 +198,10 @@ class RSSNexus:
         self.nexus_files = []
         self.template = template
         self.rss_item = None
+    
+    def exists(self)->bool:
+        ''' See if the Nexus folders exist. '''
+        return self.folders.exists()
     
     def set_meta(self, rss_feed:RSSItem)->bool:
         '''Copy-in the metadata (isa RSSFeed!) that this channel Nexus will use - no items, please.'''
@@ -228,8 +249,8 @@ class RSSNexus:
 
 if __name__ == '__main__':
     debug = False
-    print('RSSNexus: An multi=template RSS content skinner + static feed burner.')
-    print('Rev 0.02')
+    print('RSSNexus: An multi-template RSS content skinner + static feed burner.')
+    print('Rev 0.03')
 
     # STEP: SETUP NEXUS FOLDERS
     nexus_folders = NexusFolder()

@@ -4,8 +4,11 @@
 # Status: Lightly tested.
 
 import os, os.path
+from Files import *
 
 class RssTemplateFile:
+
+    FILE_TYPE = FileTypes.TemplateType
     
     def __init__(self, template_file_name, template_token = '.$NojRssIOTok$.'):
         self.filename = template_file_name
