@@ -1,9 +1,10 @@
 #!/usr/bin/env python3
 # RSSNexus.py: An multi=template RSS content skinner + static feed burner.
-# Rev 0.03
+# Rev 0.04
 # Status: Work in progress.
 
 # 2025/01/23: Created + shared at https://github.com/soft9000/RssIO
+# 2025/01/24: Switched to using JSON for content.
 
 # Mission is to create the skinning + rss sharing of a static
 # web feed. Input is a folder full of content. Output is a folder
@@ -18,24 +19,33 @@ import os.path
 import shutil
 from Files import *
 from RssIO import RSSItem, RSSFeed
+from Content import ContentFile
 from RssTemplate import RssTemplateFile
 
 class NexusFile:
-    FILE_TYPE = FileTypes.NexusFileType
+    FILE_TYPE = FileTypes.FT_OUT
 
     def __init__(self, content_file:str):
         ''' Create a NexusFile with a template. NexusFile will not be ready until the
         RSSItem is_robust, which it ain't when we're initialized. '''
         self.content_file = content_file
+        self._template = RssTemplateFile(FileTypes.DEFAULT_FILE_TEMPLATE)
         self._rss_item = RSSItem('','','')
     
     def get_content(self) -> str:
-        ''' Read the content file. '''
+        ''' Load / reload the JSON content file. '''
         try:
-            with open(self.content_file, 'r') as fh:
-                return fh.read()
+            content = ContentFile(self.content_file)
+            data = content.read_json()
+            if not data:
+                return None
+            self._rss_item = RSSItem(data['title'], data['description'], data['link'], data['pubDate']) 
+            if not data['template'] == FileTypes.DEFAULT_FILE_TEMPLATE:
+                self._template = RssTemplateFile(data['template'])
+            return data['text']           
         except:
-            return None
+            pass
+        return None
 
     def get_item(self)->RSSItem:
         ''' Get the RSS item. '''
@@ -43,14 +53,14 @@ class NexusFile:
 
     def set_item(self, title, description, link, ctime=None)->bool:
         ''' Set the RSS item assigning the title, description, 
-        link. The las node of the link (document name) is used to 
+        link. The last node of the link (document name) is used to 
         generate the file name for any NexusFile. ''' 
         for foo in title, description, link:
             if not foo:
                 return False
         self._rss_item.title = title
         self._rss_item.description = description
-        self._rss_item.link = link
+        self._rss_item.link = RSSItem('','','')
         if ctime:
             self._rss_item.try_pubDate(ctime)
         return True
@@ -67,12 +77,13 @@ class NexusFile:
             return None
         try:
             out_file = out_dir.strip()
-            if not out_file.endswith('/'):
-                out_file += '/'
+            if not out_file.endswith(FileTypes.SEP):
+                out_file += FileTypes.SEP
             node = out_file + self._rss_item.link
-            if not node.find('/') == -1:
-                node = out_file + self._rss_item.link.split('/')[-1]
-            node += suffix
+            if not node.find(FileTypes.SEP) == -1:
+                node = out_file + self._rss_item.link.split(FileTypes.SEP)[-1]
+            if not node.endswith(suffix):
+                node += suffix
             if os.path.exists(node):
                 return node
             with open(node, 'w') as fh:
@@ -154,9 +165,10 @@ class NexusFolder:
         for foo in self.in_dir, self.out_dir, self.template_dir:
             if not foo:
                 return False
-            if not os.path.exists(foo):
+            node = FileTypes.home(root_dir,foo)
+            if not os.path.exists(node):
                 try:
-                    os.makedirs(root_dir + '/' + foo)
+                    os.makedirs(node)
                 except:
                     return False
         return True
@@ -181,12 +193,12 @@ class NexusFolder:
         ''' Get the fully qualified file name for the parent folder. '''
         if not file_name or self.is_null():
             return None
-        if self.out_dir.find('/') == -1:
+        if self.out_dir.find(FileTypes.SEP) == -1:
             return './' + file_name     # root is best 
-        nodes = self.out_dir.split('/')
+        nodes = self.out_dir.split(FileTypes.SEP)
         nodes = nodes[:-1]
         nodes.append(file_name)
-        return './' + '/'.join(nodes)    # parent is bests
+        return './' + FileTypes.SEP.join(nodes)    # parent is bests
 
     
 
@@ -239,18 +251,20 @@ class RSSNexus:
             if not file_item.create_output(self.template, self.folders.out_dir):
                 raise RssException(f'Error 100: Unable to create output for RSS Item {ss} "{file_item.get_item().title}".')
             zitem = file_item.get_item()
-            zitem.link = web_root_url + '/' + file_item.get_output_file(self.folders.out_dir)
+            zitem.link = FileTypes.home(web_root_url, file_item.get_output_file(self.folders.out_dir))
             rss_feed.add_item(zitem)
         home_rss = self.folders.home_out('index.rss')
-        rss_feed.link = web_root_url + '/' + 'index.rss'
+        rss_feed.link = FileTypes.home(web_root_url,'index.rss')
         if not RSSFeed.save(rss_feed, home_rss):
             raise RssException('Error 101: Unable to create the RSS meta-file.')
         return True
 
 if __name__ == '__main__':
-    debug = False
+    debug = True
     print('RSSNexus: An multi-template RSS content skinner + static feed burner.')
     print('Rev 0.03')
+
+    web_site = 'https://www.soft9000.com'
 
     # STEP: SETUP NEXUS FOLDERS
     nexus_folders = NexusFolder()
@@ -260,7 +274,7 @@ if __name__ == '__main__':
         raise RssException('Error: Unable to create Nexus folders.')
     
     # STEP: TEST TEMPLATE FILE MERGE
-    test_template = RssTemplateFile(nexus_folders.template_dir + '/test_template.txt')
+    test_template = RssTemplateFile(FileTypes.home(nexus_folders.template_dir, 'test_template' + FileTypes.FT_TEMPLATE))
     if not test_template.create_template_file('Hello, ', '!'):
         raise RssException('Error: Unable to create template file.')
     content = test_template.merge_with('World')
@@ -271,23 +285,31 @@ if __name__ == '__main__':
     rss_nexus = RSSNexus(nexus_folders, test_template)    
     # STEP: TEST FILE MULI-FILE CONTENT FILE CREATIONS (NO RSS)
     for content in "fred", "ralph", "joe":
-        content_file = nexus_folders.in_dir + '/' + content + '.txt'
-        with open(content_file, 'w') as fh:
-            fh.write(content)
-        nexus_file = NexusFile(content_file)
+        znode = content + FileTypes.FT_IN
+        content_file_name_in = FileTypes.home(nexus_folders.in_dir, znode)
+        # Save the data structure into content file:
+        create_json = ContentFile(content_file_name_in)
+        jdata = ContentFile.DEFAULTS
+        jdata['text'] = content
+        jdata['link'] = FileTypes.home(web_site, FileTypes.home(nexus_folders.out_dir, content + FileTypes.FT_OUT))
+        if not create_json.write_json(jdata):
+            raise RssException(f'Unable to create "{create_json.filedata}"')
+        # Create the NexusFile for the RSS feed:
+        nexus_file = NexusFile(content_file_name_in)
         if not nexus_file.set_item('zTitle for ' + content, 'zDescr for ' + content, content):
             raise RssException('Error: Unable to set RSS item.')
         if not nexus_file.create_output(test_template, nexus_folders.out_dir):
             raise RssException('Error: Unable to create RSS output.')
+        # Keep it.
         rss_feed.add_item(nexus_file.get_item()) # for the next test
         rss_nexus.add_item(nexus_file)
 
     # STEP: TEST MANUAL RSSFeed CREATION
-    RSSFeed.save(rss_feed, "test_index.rss")
+    RSSFeed.save(rss_feed, FileTypes.home(nexus_folders.out_dir, "test_index.rss"))
 
     # STEP: TEST THE RSSFolder AUTO (mega?) GENERATOR
     rss_nexus.set_meta(rss_feed)
-    rss_nexus.generate('https://www.soft9000.com',True)
+    rss_nexus.generate(web_site,True)
 
     funko = RSSNexus(nexus_folders, test_template)
     ref = funko.folders.out_dir 
