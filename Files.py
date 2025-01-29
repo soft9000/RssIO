@@ -2,11 +2,12 @@
 
 class FileTypes:
     SEP = '/'
-    FT_OUT = '.html' # NexusFile.FILE_TYPE
-    FT_TEMPLATE  = '.txt'  # RssTemplateFile.FILE_TYPE
-    FT_IN = '.json' # ContentFile.FILE_TYPE
-    DEFAULT_FILE_RSS   = 'nexus.rss'
-    DEFAULT_FILE_TEMPLATE = "default" + FT_TEMPLATE
+    FT_TEMPLATE  = '.txt'   # RssTemplateFile.FILE_TYPE
+    FT_OUT = '.html'        # NexusFile.FILE_TYPE
+    FT_IN = '.json'         # ContentFile.FILE_TYPE
+    DEFAULT_FILE_TEMPLATE   = "default" + FT_TEMPLATE
+    DEFAULT_FILE_README     = 'README.txt'
+    DEFAULT_FILE_RSS        = 'nexus.rss'
 
     @staticmethod
     def detox(node:str, sep=SEP)->str:

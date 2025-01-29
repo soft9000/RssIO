@@ -81,8 +81,9 @@ def test_cases(debug=False):
         
         data_read = file_handler.read_json()
         if data_read:
-            print(data_read)
-            if not debug:
+            if debug:
+                print(data_read)
+            else:
                 os.unlink(afile)
                 if file_handler.exists():
                     raise RssException(f'Failed to REMOVE {afile}')

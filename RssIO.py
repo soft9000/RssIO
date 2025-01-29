@@ -195,7 +195,8 @@ def test_cases(debug=False):
 
     RSSFeed.save(myFeed, "testing.rss")
     myFeed.use_default_generator()
-    print(myFeed.to_string())
+    if debug:
+        print(myFeed.to_string())
 
     if myFeed.is_robust():
         print("Feed is robust.")

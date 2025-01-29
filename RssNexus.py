@@ -338,7 +338,7 @@ def test_cases(debug=False):
     if not debug and not rss_nexus.rmtree():
         raise RssException('Error: Unable to remove Nexus test folders.')
 
-    print('Status: Testing Success.')
+    print('Testing Success.')
 
 
 if __name__ == '__main__':

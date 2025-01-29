@@ -1,8 +1,8 @@
-#! /usr/bin/env python3
 #!/usr/bin/env python3
 # NexusProject.py: Manage a site's RSS feed, templates, and more.
-# Rev 0.02
+# Rev 0.04
 # Status: R&D.
+
 
 # 2025/01/24: Created + shared at https://github.com/soft9000/RssIO
 import os
@@ -12,6 +12,20 @@ from RssNexus import *
 from Content import ContentFile
 
 class RssSite:
+    ''' An RssSite is designed read any single `input` folder, skin the text using any input-defined 
+    `template` file, then place the results into a single `output` folder. 
+    
+    Ready to upload to your site, the `output` folder will also contain the `nexus.rss` file.
+
+    A default template is provided. Feel free to change it and / or create your own template file(s) 
+    to use from within your `input` file.
+
+
+    Enjoy,
+
+    Randall Nagy
+    
+    '''
     PREFIX = '[HTML prefix usually here - braces not required.]'
     SUFFIX = '[HTML suffix usually here - braces not required.]'
     
@@ -39,7 +53,11 @@ class RssSite:
         if not node.endswith(FileTypes.FT_IN):
             node += FileTypes.FT_IN
         cf = ContentFile(FileTypes.home(self.nexus.nexus_folders.in_dir, node))
-        if not cf.write_json(ContentFile.DEFAULTS):
+        # Add as much meta as possible:
+        meta = ContentFile.DEFAULTS
+        core = node.replace(FileTypes.FT_IN,'')
+        meta['link'] = FileTypes.home(self.url, core + FileTypes.FT_OUT)
+        if not cf.write_json(meta):
             return None
         return cf.filename
 
@@ -50,6 +68,9 @@ class RssSite:
         if not self.nexus.rmtree():
             return False
         try:
+            readme = FileTypes.home(self.home_dir, FileTypes.DEFAULT_FILE_README)
+            if os.path.exists(readme):
+                os.remove(readme)
             if len(os.listdir(self.home_dir)) == 0:
                 shutil.rmtree(self.home_dir)
             return not self.exists()
@@ -78,7 +99,11 @@ class RssSite:
         if not self.exists():
             if not RSSFeed.save(rss_feed, FileTypes.home(self.home_dir, FileTypes.DEFAULT_FILE_RSS)): # create the default RSS Channel
                 return False
-        return True
+        # Final - README, info.
+        readme = FileTypes.home(self.home_dir, FileTypes.DEFAULT_FILE_README)
+        with open(readme, 'w') as fh:
+            fh.write(RssSite.__doc__)
+        return os.path.exists(readme)
     
     def update(self)->bool:
         '''Update the RSS feed.'''
@@ -155,6 +180,7 @@ def test_cases(debug=False):
                 raise RssException(f'Unable to remove {cfile}.')
     
     # STEP: Complex content creations
+    
     # STEP: Remove Test Site / Reset Test Case
     if not debug and not site.rmtree():
         raise RssException("Regression: Unable to remove test site.")
