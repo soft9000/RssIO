@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 # RSSNexus.py: An multi=template RSS content skinner + static feed burner.
-# Rev 0.04
+# Rev 0.05
 # Status: Work in progress.
 
 # 2025/01/23: Created + shared at https://github.com/soft9000/RssIO
@@ -60,7 +60,7 @@ class NexusFile:
                 return False
         self._rss_item.title = title
         self._rss_item.description = description
-        self._rss_item.link = RSSItem('','','')
+        self._rss_item.link = link
         if ctime:
             self._rss_item.try_pubDate(ctime)
         return True
@@ -165,10 +165,9 @@ class NexusFolder:
         for foo in self.in_dir, self.out_dir, self.template_dir:
             if not foo:
                 return False
-            node = FileTypes.home(root_dir,foo)
-            if not os.path.exists(node):
+            if not os.path.exists(foo):
                 try:
-                    os.makedirs(node)
+                    os.makedirs(foo)
                 except:
                     return False
         return True
@@ -259,8 +258,7 @@ class RSSNexus:
             raise RssException('Error 101: Unable to create the RSS meta-file.')
         return True
 
-if __name__ == '__main__':
-    debug = True
+def test_cases(debug=False):
     print('RSSNexus: An multi-template RSS content skinner + static feed burner.')
     print('Rev 0.03')
 
@@ -296,7 +294,7 @@ if __name__ == '__main__':
             raise RssException(f'Unable to create "{create_json.filedata}"')
         # Create the NexusFile for the RSS feed:
         nexus_file = NexusFile(content_file_name_in)
-        if not nexus_file.set_item('zTitle for ' + content, 'zDescr for ' + content, content):
+        if not nexus_file.set_item('zTitle for ' + content, 'zDescr for ' + content, jdata['link']):
             raise RssException('Error: Unable to set RSS item.')
         if not nexus_file.create_output(test_template, nexus_folders.out_dir):
             raise RssException('Error: Unable to create RSS output.')
@@ -334,3 +332,7 @@ if __name__ == '__main__':
         raise RssException('Error: Unable to remove Nexus test folders.')
 
     print('Status: Testing Success.')
+
+
+if __name__ == '__main__':
+    test_cases()

@@ -180,7 +180,7 @@ class RSSFeed(RSSItem):
         return True
 
 
-if __name__ == '__main__':
+def test_cases(debug=False):
     myFeed = RSSFeed.load("./RssIO/nexus.rss")
     if myFeed is None:
         myFeed = RSSFeed.load("nexus.rss")
@@ -195,3 +195,7 @@ if __name__ == '__main__':
 
     if myFeed.is_robust():
         print("Feed is robust.")
+
+
+if __name__ == '__main__':
+    test_cases()

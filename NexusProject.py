@@ -1,7 +1,7 @@
 #! /usr/bin/env python3
 #!/usr/bin/env python3
 # NexusProject.py: Manage a site's RSS feed, templates, and more.
-# Rev 0.01
+# Rev 0.02
 # Status: R&D.
 
 # 2025/01/24: Created + shared at https://github.com/soft9000/RssIO
@@ -20,8 +20,8 @@ class RssSite:
         self.url = site_url
         self.rss_file = FileTypes.home(self.home_dir, RssSite.RSS_NODE)
         nexus_folder = NexusFolder()
-        nexus_folder.assign('input', 'output', 'templates')
-        default_template = FileTypes.home(root_folder, FileTypes.home(nexus_folder.template_dir, FileTypes.DEFAULT_FILE_TEMPLATE))
+        nexus_folder.assign(FileTypes.home(root_folder, 'input'), FileTypes.home(root_folder, 'output'), FileTypes.home(root_folder, 'templates'))
+        default_template = FileTypes.home(nexus_folder.template_dir, FileTypes.DEFAULT_FILE_TEMPLATE)
         self.nexus = RSSNexus(nexus_folder, RssTemplateFile(default_template))
 
     def exists(self)->bool:
@@ -71,26 +71,47 @@ class RssSite:
 
     def read_feed(self, rss_file:str)->RSSFeed:
         '''Read an instance of the RSSFeed, if found.'''
-        if not self.exists():
-            self.create()
-        feed = RSSFeed.load(rss_file)
-        if not feed:
-            return None
-        return feed
+        return RSSFeed.load(rss_file)
     
-if __name__ == '__main__':
-    # STEP: Default Site Creation + Load
+def test_cases(debug=False):
+    # STEP: Default Site Creation + Load + Existance
     tsite = './Test001'
+    rss_str = """<?xml version="1.0" ?>
+<rss version="2.0">   
+  <channel>
+    <title>Channel / Site Title</title>
+    <link>https://www.soft9000.com/nexus.rss</link>
+    <description>Description of this RSS channel or site</description>
+    <generator>https://github.com/soft9000/RssIO</generator>
+  </channel>
+</rss>"""
     site = RssSite(tsite,"https://www.soft9000.com")
-    feed = site.read_feed(FileTypes.home(tsite, FileTypes.DEFAULT_FILE_RSS))
+    rss_file = FileTypes.home(site.nexus.folders.out_dir, FileTypes.DEFAULT_FILE_RSS)
+    if not site.create():
+        raise RssException('Site creation failure.')
+    with open(rss_file, 'w') as fh:
+        fh.write(rss_str)
+    feed = site.read_feed(rss_file)
     if not feed:
         raise RssException(f'Unable to RssSite.read_feed({tsite}).')
-    print(feed.to_string())
-    # TODO: Stirng Comp
+    
+    if not site.exists():
+        raise RssException("RssSite.exists() failure.")
+
+    # STEP: Regression detection / string Comp
+    _str = feed.to_string()
+    for ss,line in enumerate(rss_str.split(),1):
+        if  line.strip().find(line):
+            raise RssException(f'Line generation error {ss}')
+
     # STEP: Basic content creation
     # STEP: Complex content creations
     print("\nTesting Success.")
     # TODO: Remove Test Site / Reset Test Case
+
+
+if __name__ == '__main__':
+    test_cases()
     
     
     

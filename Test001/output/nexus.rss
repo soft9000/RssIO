@@ -1,0 +1,9 @@
+<?xml version="1.0" ?>
+<rss version="2.0">   
+  <channel>
+    <title>Channel / Site Title</title>
+    <link>https://www.soft9000.com/nexus.rss</link>
+    <description>Description of this RSS channel or site</description>
+    <generator>https://github.com/soft9000/RssIO</generator>
+  </channel>
+</rss>
