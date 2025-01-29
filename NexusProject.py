@@ -21,7 +21,7 @@ class RssSite:
         if not site_url:
             site_url = 'https://www.myzite9000.com'
         if not root_folder:
-            root_folder = site_url.split('/')[-1:]
+            root_folder = site_url.split('/')[-1:][0]
         self.home_dir = root_folder
         self.url = site_url
         self.rss_file = FileTypes.home(self.home_dir, RssSite.RSS_NODE)
@@ -31,6 +31,7 @@ class RssSite:
         self.nexus = RSSNexus(nexus_folder, RssTemplateFile(default_template))
 
     def create_input_file(self, node)->str:
+        '''Create + place a node into the input folder. Content default and file suffix assured. '''
         if not node or not self.exists():
             return None
         if node.find(FileTypes.SEP) != -1:
@@ -107,6 +108,7 @@ class RssSite:
         return RSSFeed.load(rss_file)
     
 def test_cases(debug=False):
+    print(f"***** Testing Module {__name__}.")
     # STEP: Default Site Creation + Load + Existance
     tsite = './Test001'
     rss_str = """<?xml version="1.0" ?>
@@ -133,12 +135,25 @@ def test_cases(debug=False):
 
     # STEP: Regression detection / string Comp
     _str = feed.to_string()
-    for ss,line in enumerate(rss_str.split(),1):
-        if  line.strip().find(line):
-            raise RssException(f'Line generation error {ss}')
+    for ss,line in enumerate(rss_str.split('\n'),1):
+        bare = line.strip()
+        if  _str.find(bare) == -1:
+            raise RssException(f'Line generation error {ss}: {bare}')
 
     # STEP: Basic content creation
-    site.create_input_file('foo')
+    for node in 'foo', 'foo' + FileTypes.FT_IN:
+        cfile = site.create_input_file(node)
+        if not cfile or not os.path.exists(cfile):
+            raise RssException("Content creation failure.")
+        
+        if not cfile.endswith(FileTypes.FT_IN):
+            raise RssException("Invaild input file type assigned.")
+        
+        if not debug:
+            os.remove(cfile)
+            if os.path.exists(cfile):
+                raise RssException(f'Unable to remove {cfile}.')
+    
     # STEP: Complex content creations
     # STEP: Remove Test Site / Reset Test Case
     if not debug and not site.rmtree():

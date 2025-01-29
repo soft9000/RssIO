@@ -81,7 +81,7 @@ class NexusFile:
                 out_file += FileTypes.SEP
             node = out_file + self._rss_item.link
             if not node.find(FileTypes.SEP) == -1:
-                node = out_file + self._rss_item.link.split(FileTypes.SEP)[-1]
+                node = out_file + self._rss_item.link.split(FileTypes.SEP)[-1][0]
             if not node.endswith(suffix):
                 node += suffix
             if os.path.exists(node):
@@ -197,7 +197,7 @@ class NexusFolder:
         nodes = self.out_dir.split(FileTypes.SEP)
         nodes = nodes[:-1]
         nodes.append(file_name)
-        return './' + FileTypes.SEP.join(nodes)    # parent is bests
+        return './' + FileTypes.SEP.join(nodes)    # parent is best
 
     
 
@@ -268,7 +268,7 @@ class RSSNexus:
         return True
 
 def test_cases(debug=False):
-    print('RSSNexus: An multi-template RSS content skinner + static feed burner.')
+    print(f"***** Testing Module {__name__}.")
     web_site = 'https://www.soft9000.com'
 
     # STEP: SETUP NEXUS FOLDERS

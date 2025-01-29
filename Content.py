@@ -69,6 +69,7 @@ class ContentFile:
 
 def test_cases(debug=False):
     import os
+    print(f"***** Testing Module {__name__}.")
     for afile in '~example', '~example'+ ContentFile.FILE_TYPE:
         file_handler = ContentFile(afile)
         

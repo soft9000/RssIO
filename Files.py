@@ -39,6 +39,7 @@ class FileTypes:
 
 
 def test_cases(debug=False):
+    print(f"***** Testing Module {__name__}.")
     foo = FileTypes.home(None,None)
     if foo != '/':
         raise Exception(f"Regression 00100: FileTypes.home() should be None, got '{foo}'.")

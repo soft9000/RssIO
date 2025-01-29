@@ -181,7 +181,10 @@ class RSSFeed(RSSItem):
 
 
 def test_cases(debug=False):
-    myFeed = RSSFeed.load("./RssIO/nexus.rss")
+    print(f"***** Testing Module {__name__}.")
+    # The legacy file is to be added to:
+    legacy_rss = "./RssIO/nexus.rss"
+    myFeed = RSSFeed.load(legacy_rss)
     if myFeed is None:
         myFeed = RSSFeed.load("nexus.rss")
     if myFeed is None:
@@ -189,12 +192,18 @@ def test_cases(debug=False):
 
     if os.path.exists("testing.rss"):
         os.unlink("testing.rss")
+
     RSSFeed.save(myFeed, "testing.rss")
     myFeed.use_default_generator()
     print(myFeed.to_string())
 
     if myFeed.is_robust():
         print("Feed is robust.")
+
+    if not debug and os.path.exists("testing.rss"):
+        os.unlink("testing.rss")
+    
+    print("Testing Success.")
 
 
 if __name__ == '__main__':
