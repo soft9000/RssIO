@@ -5,24 +5,24 @@
     <link>https://www.soft9000.com/index.rss</link>
     <description>A feed test for the manual creation</description>
     <generator>https://github.com/soft9000/RssIO</generator>
-    <pubDate>Wed Jan 29 03:31:52 2025</pubDate>
+    <pubDate>Wed Jan 29 04:06:03 2025</pubDate>
     <item>
       <title>Sample Title</title>
       <link>https://www.soft9000.com/test_out/fred.html</link>
       <description>Sample Description</description>
-      <pubDate>Wed Jan 29 03:31:52 2025</pubDate>
+      <pubDate>Wed Jan 29 04:06:03 2025</pubDate>
     </item>
     <item>
       <title>Sample Title</title>
       <link>https://www.soft9000.com/test_out/ralph.html</link>
       <description>Sample Description</description>
-      <pubDate>Wed Jan 29 03:31:52 2025</pubDate>
+      <pubDate>Wed Jan 29 04:06:03 2025</pubDate>
     </item>
     <item>
       <title>Sample Title</title>
       <link>https://www.soft9000.com/test_out/joe.html</link>
       <description>Sample Description</description>
-      <pubDate>Wed Jan 29 03:31:52 2025</pubDate>
+      <pubDate>Wed Jan 29 04:06:03 2025</pubDate>
     </item>
   </channel>
 </rss>

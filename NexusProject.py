@@ -5,6 +5,8 @@
 # Status: R&D.
 
 # 2025/01/24: Created + shared at https://github.com/soft9000/RssIO
+import os
+import shutil
 from RssIO import *
 from RssNexus import *
 from Content import ContentFile
@@ -23,6 +25,17 @@ class RssSite:
         nexus_folder.assign(FileTypes.home(root_folder, 'input'), FileTypes.home(root_folder, 'output'), FileTypes.home(root_folder, 'templates'))
         default_template = FileTypes.home(nexus_folder.template_dir, FileTypes.DEFAULT_FILE_TEMPLATE)
         self.nexus = RSSNexus(nexus_folder, RssTemplateFile(default_template))
+    
+    def rmtree(self):
+        if not self.nexus.rmtree():
+            return False
+        for dum in '.', './', '..', '../':
+            if self.home_dir == dum:
+                return False
+        if os.getcwd() == self.home_dir:
+            return False
+        shutil.rmtree(self.home_dir)
+        return True
 
     def exists(self)->bool:
         if not os.path.exists(self.home_dir): 
@@ -106,8 +119,10 @@ def test_cases(debug=False):
 
     # STEP: Basic content creation
     # STEP: Complex content creations
+    # STEP: Remove Test Site / Reset Test Case
+    if not site.rmtree():
+        raise RssException("Regression: Unable to remove test site.")
     print("\nTesting Success.")
-    # TODO: Remove Test Site / Reset Test Case
 
 
 if __name__ == '__main__':

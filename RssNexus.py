@@ -210,6 +210,12 @@ class RSSNexus:
         self.template = template
         self.rss_item = None
     
+    def rmtree(self)->bool:
+        ''' Remove the nexus - True if removed. '''
+        if self.exists():
+            return self.folders.rmtree()
+        return True
+    
     def exists(self)->bool:
         ''' See if the Nexus folders exist. '''
         return self.folders.exists()
@@ -260,8 +266,6 @@ class RSSNexus:
 
 def test_cases(debug=False):
     print('RSSNexus: An multi-template RSS content skinner + static feed burner.')
-    print('Rev 0.03')
-
     web_site = 'https://www.soft9000.com'
 
     # STEP: SETUP NEXUS FOLDERS
@@ -328,7 +332,7 @@ def test_cases(debug=False):
     # STEP: VERIFY RSSNexus FILE SKINNING
     
     # STEP: POST-TEST CLEANUP
-    if not debug and not nexus_folders.rmtree():
+    if not debug and not rss_nexus.rmtree():
         raise RssException('Error: Unable to remove Nexus test folders.')
 
     print('Status: Testing Success.')
