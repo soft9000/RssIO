@@ -18,6 +18,10 @@ class RssSite:
     RSS_NODE = FileTypes.DEFAULT_FILE_RSS
 
     def __init__(self, root_folder, site_url):
+        if not site_url:
+            site_url = 'https://www.myzite9000.com'
+        if not root_folder:
+            root_folder = site_url.split('/')[-1:]
         self.home_dir = root_folder
         self.url = site_url
         self.rss_file = FileTypes.home(self.home_dir, RssSite.RSS_NODE)
@@ -25,19 +29,35 @@ class RssSite:
         nexus_folder.assign(FileTypes.home(root_folder, 'input'), FileTypes.home(root_folder, 'output'), FileTypes.home(root_folder, 'templates'))
         default_template = FileTypes.home(nexus_folder.template_dir, FileTypes.DEFAULT_FILE_TEMPLATE)
         self.nexus = RSSNexus(nexus_folder, RssTemplateFile(default_template))
-    
+
+    def create_input_file(self, node)->str:
+        if not node or not self.exists():
+            return None
+        if node.find(FileTypes.SEP) != -1:
+            node = node.split(FileTypes.SEP)[:-1]
+        if not node.endswith(FileTypes.FT_IN):
+            node += FileTypes.FT_IN
+        cf = ContentFile(FileTypes.home(self.nexus.nexus_folders.in_dir, node))
+        if not cf.write_json(ContentFile.DEFAULTS):
+            return None
+        return cf.filename
+
     def rmtree(self):
+        ''' Safely remove sub + project folders. Return true if / when there are none. '''
+        if not self.exists():
+            return True
         if not self.nexus.rmtree():
             return False
-        for dum in '.', './', '..', '../':
-            if self.home_dir == dum:
-                return False
-        if os.getcwd() == self.home_dir:
-            return False
-        shutil.rmtree(self.home_dir)
-        return True
+        try:
+            if len(os.listdir(self.home_dir)) == 0:
+                shutil.rmtree(self.home_dir)
+            return not self.exists()
+        except:
+            pass
+        return False
 
     def exists(self)->bool:
+        ''' See if the folders exist. '''
         if not os.path.exists(self.home_dir): 
             return False
         return self.nexus.exists()
@@ -47,7 +67,7 @@ class RssSite:
         if not os.path.exists(self.home_dir): 
             os.mkdir(self.home_dir)                         # create root folder
         if not self.nexus.exists():
-            if not self.nexus.folders.create_folders(self.home_dir): # create input, output, and template folders
+            if not self.nexus.nexus_folders.create_folders(self.home_dir): # create input, output, and template folders
                 return False
         if not self.nexus.template.exists():                # create default template file
             if not self.nexus.template.create_template_file(RssSite.PREFIX, RssSite.SUFFIX):
@@ -99,7 +119,7 @@ def test_cases(debug=False):
   </channel>
 </rss>"""
     site = RssSite(tsite,"https://www.soft9000.com")
-    rss_file = FileTypes.home(site.nexus.folders.out_dir, FileTypes.DEFAULT_FILE_RSS)
+    rss_file = FileTypes.home(site.nexus.nexus_folders.out_dir, FileTypes.DEFAULT_FILE_RSS)
     if not site.create():
         raise RssException('Site creation failure.')
     with open(rss_file, 'w') as fh:
@@ -118,9 +138,10 @@ def test_cases(debug=False):
             raise RssException(f'Line generation error {ss}')
 
     # STEP: Basic content creation
+    site.create_input_file('foo')
     # STEP: Complex content creations
     # STEP: Remove Test Site / Reset Test Case
-    if not site.rmtree():
+    if not debug and not site.rmtree():
         raise RssException("Regression: Unable to remove test site.")
     print("\nTesting Success.")
 

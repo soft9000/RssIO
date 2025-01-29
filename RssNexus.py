@@ -188,7 +188,7 @@ class NexusFolder:
                 return True
         return False
     
-    def home_out(self, file_name:str) -> str:
+    def into_root(self, file_name:str) -> str:
         ''' Get the fully qualified file name for the parent folder. '''
         if not file_name or self.is_null():
             return None
@@ -205,7 +205,7 @@ from RssExceptions import RssException
 class RSSNexus:
     ''' The RSSNexus is the heart of the RSS feed generator. '''
     def __init__(self, project:NexusFolder, template:RssTemplateFile):
-        self.folders = project
+        self.nexus_folders = project
         self.nexus_files = []
         self.template = template
         self.rss_item = None
@@ -213,12 +213,12 @@ class RSSNexus:
     def rmtree(self)->bool:
         ''' Remove the nexus - True if removed. '''
         if self.exists():
-            return self.folders.rmtree()
+            return self.nexus_folders.rmtree()
         return True
     
     def exists(self)->bool:
         ''' See if the Nexus folders exist. '''
-        return self.folders.exists()
+        return self.nexus_folders.exists()
     
     def set_meta(self, rss_feed:RSSItem)->bool:
         '''Copy-in the metadata (isa RSSFeed!) that this channel Nexus will use - no items, please.'''
@@ -228,7 +228,7 @@ class RSSNexus:
         else:
             return False
     
-    def add_item(self, nexus_file)->bool:
+    def add_item(self, nexus_file:NexusFile)->bool:
         '''Safe-assign / append a NexusFile. '''
         if nexus_file and nexus_file.is_ready():
             self.nexus_files.append(nexus_file)
@@ -239,7 +239,7 @@ class RSSNexus:
         ''' Raise an exception if this Nexus is not valid. '''
         if not self.rss_item or not self.rss_item.is_robust():
             raise RssException("Error 001: Cannel metadata has not been assigned to this Nexus.")
-        if not self.folders or self.folders.is_null():
+        if not self.nexus_folders or self.nexus_folders.is_null():
             raise RssException("Error 002: Nexus project has not been assigned.")
         if not self.template or not self.template.exists():
             raise RssException("Error 003: Nexus is not valid.")
@@ -248,18 +248,21 @@ class RSSNexus:
                 raise RssException(f'Error 004: RSS Item {ss} is not robust.')
         return True
 
-    def generate(self, web_root_url, owrite=False) -> bool:
+    def generate(self, web_root_url) -> bool:
         ''' Generate the RSS feed and z static site. Raises an RssException in error. '''
         self.validate()
-        rss_feed = RSSFeed(self.rss_item.title,self.rss_item.description,self.rss_item.link,self.rss_item.pubDate)
+        rss_feed = RSSFeed(self.rss_item.title, self.rss_item.description, self.rss_item.link, self.rss_item.pubDate)
         for ss, file_item in enumerate(self.nexus_files):
-            if not file_item.create_output(self.template, self.folders.out_dir):
+            if not file_item.create_output(self.template, self.nexus_folders.out_dir):
                 raise RssException(f'Error 100: Unable to create output for RSS Item {ss} "{file_item.get_item().title}".')
             zitem = file_item.get_item()
-            zitem.link = FileTypes.home(web_root_url, file_item.get_output_file(self.folders.out_dir))
+            lname = FileTypes.last_name(file_item.content_file)
+            zitem.link = FileTypes.home(web_root_url, lname)
             rss_feed.add_item(zitem)
-        home_rss = self.folders.home_out('index.rss')
-        rss_feed.link = FileTypes.home(web_root_url,'index.rss')
+
+        home_rss      = FileTypes.home(self.nexus_folders.out_dir, FileTypes.DEFAULT_FILE_RSS)
+        rss_feed.link = FileTypes.home(web_root_url,         FileTypes.DEFAULT_FILE_RSS)
+
         if not RSSFeed.save(rss_feed, home_rss):
             raise RssException('Error 101: Unable to create the RSS meta-file.')
         return True
@@ -295,7 +298,7 @@ def test_cases(debug=False):
         jdata['text'] = content
         jdata['link'] = FileTypes.home(web_site, FileTypes.home(nexus_folders.out_dir, content + FileTypes.FT_OUT))
         if not create_json.write_json(jdata):
-            raise RssException(f'Unable to create "{create_json.filedata}"')
+            raise RssException(f'Unable to create "{create_json.filename}"')
         # Create the NexusFile for the RSS feed:
         nexus_file = NexusFile(content_file_name_in)
         if not nexus_file.set_item('zTitle for ' + content, 'zDescr for ' + content, jdata['link']):
@@ -311,19 +314,19 @@ def test_cases(debug=False):
 
     # STEP: TEST THE RSSFolder AUTO (mega?) GENERATOR
     rss_nexus.set_meta(rss_feed)
-    rss_nexus.generate(web_site,True)
+    rss_nexus.generate(web_site)
 
     funko = RSSNexus(nexus_folders, test_template)
-    ref = funko.folders.out_dir 
-    funko.folders.out_dir = 'a/b/c'
-    foo = funko.folders.home_out('index.rss')
+    ref = funko.nexus_folders.out_dir 
+    funko.nexus_folders.out_dir = 'a/b/c'
+    foo = funko.nexus_folders.into_root('index.rss')
     if foo != './a/b/index.rss':
         raise RssException('Error: Unable to create parented home_out.')
-    funko.folders.out_dir = 'a'
-    foo = funko.folders.home_out('index.rss')
+    funko.nexus_folders.out_dir = 'a'
+    foo = funko.nexus_folders.into_root('index.rss')
     if foo != './index.rss':
         raise RssException('Error: Unable to create rooted home_out.')
-    funko.folders.out_dir = ref
+    funko.nexus_folders.out_dir = ref
     
     # STEP: TEST RSSNexus CONTENT DETECTION
 
