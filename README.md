@@ -1,5 +1,5 @@
 # Overview
-From destroying families for lack of a pronoun to the destruction of Canadian truck-driver for a right to protest, can anyone yet doubt that we've seen the ugliest side of pop culture?
+From destroying families for lack of a pronoun to the destruction of Canadian truck-drivers for a right to protest, can anyone yet doubt that we've seen the ugliest side of pop culture?
 
 Most of us abandoning the social medias the moment our own governments decided to turn our very own posts against us… but who’s community were our friends, anyway?
 
