@@ -3,7 +3,9 @@ From destroying families for lack of a pronoun to the destruction of Canadian tr
 
 Most of us abandoning the social medias the moment our own governments decided to turn our very own posts against us… but who’s community were our friends, anyway?
 
-So this project is a way to share, serve, and protect our content from marauding 'haters. The NexusProject Module is  all about that.
+So this project is a way to share, serve, and protect our content. RssNexus is the easiest path for the 'share' and the 'serve.'
+
+Protecting our 'stuff from marauding 'haters is where we've cobbled together a very simple special sauce. The NexusProject Module is  all about that.
 
 # Operations
 
