@@ -23,7 +23,7 @@ RssSite is presently a work in progress. Everything else is o.k for you to use i
 
 RssSite is much like RssNexus, but RssSite adds an official set of hard-wired assumptions.
 
-An RssSite is designed read any single `input` folder, skin the text using any input-defined 
+An RssSite is designed to read any single `input` folder, skin the text using any input-defined 
 `template` file, then place the results into a single `output` folder. 
     
 Ready to upload to your site, the `output` folder will also contain the `nexus.rss` file.

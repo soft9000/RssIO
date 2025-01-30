@@ -12,8 +12,9 @@ from RssNexus import *
 from Content import ContentFile
 
 class RssSite:
-    ''' An RssSite is designed read any single `input` folder, skin the text using any input-defined 
-    `template` file, then place the results into a single `output` folder. 
+    ''' An RssSite is designed to read any single `input` folder, skin the text using any input-defined 
+    `template` file, then place the results into a single `output` folder. Security parameters enable 
+    several built-in content protection options.
     
     Ready to upload to your site, the `output` folder will also contain the `nexus.rss` file.
 
