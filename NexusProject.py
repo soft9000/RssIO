@@ -10,6 +10,7 @@ import shutil
 from RssIO import *
 from RssNexus import *
 from Content import ContentFile
+from SecIO import Enigma
 
 class RssSite:
     ''' An RssSite is designed to read any single `input` folder, skin the text using any input-defined 
@@ -38,7 +39,8 @@ class RssSite:
         if not root_folder:
             root_folder = site_url.split('/')[-1:][0]
         self.home_dir = root_folder
-        self.url = site_url
+        sec = Enigma() # default encoding
+        self.url = sec.assign(site_url)
         self.rss_file = FileTypes.home(self.home_dir, RssSite.RSS_NODE)
         nexus_folder = NexusFolder()
         nexus_folder.assign(FileTypes.home(root_folder, 'input'), FileTypes.home(root_folder, 'output'), FileTypes.home(root_folder, 'templates'))
@@ -104,6 +106,10 @@ class RssSite:
         readme = FileTypes.home(self.home_dir, FileTypes.DEFAULT_FILE_README)
         with open(readme, 'w') as fh:
             fh.write(RssSite.__doc__)
+            fh.write('Security protocols include:\n')
+            for key in Enigma.protocols:
+                dev = 'unsupported' if Enigma.Sec[key][2] == None else 'supported'
+                fh.write(f"\t{key:^10} is presently {dev}.\n")
         return os.path.exists(readme)
     
     def update(self)->bool:

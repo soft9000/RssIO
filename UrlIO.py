@@ -1,11 +1,12 @@
 from urllib.parse import urlparse
+'''A little effort designed to enforce a reasonable set of logic to enable plug-in URL security options. '''
 
 class UrlParser:
     DEFAULT_FIELDS = {
         "scheme": None,
         "site": None,
         "path": None,
-        "params": None,
+        "param": None,
         "query": None,
         "fragment": None
     }
@@ -38,13 +39,13 @@ class UrlParser:
         result['scheme'] = UrlParser.default(parsed_url.scheme)
         result['site'] = UrlParser.default(parsed_url.netloc)
         result['path'] = UrlParser.default(parsed_url.path)
-        result['params'] = UrlParser.default(parsed_url.params)
+        result['param'] = UrlParser.default(parsed_url.params)
         result['query'] = UrlParser.default(parsed_url.query)
         result['fragment'] = UrlParser.default(parsed_url.fragment)
-        if not result['params']:
+        if not result['param']:
             pos = url.find('?')
             if pos != -1:
-                result['params'] = url[pos:]
+                result['param'] = url[pos:].strip()
         return result
 
 
@@ -52,10 +53,10 @@ def test_cases(debug=False):
     print(f"***** Testing Module {__name__}.")
     UrlParser.is_null(None)
     responses = [
-        {'scheme': None, 'site': None, 'path': None, 'params': None, 'query': None, 'fragment': None},
-        {'scheme': None, 'site': None, 'path': None, 'params': None, 'query': None, 'fragment': None},
-        {'scheme': 'https', 'site': 'www.soft9000.com', 'path': None, 'params': None, 'query': None, 'fragment': None},
-        {'scheme': 'https', 'site': 'www.example.com', 'path': '/path/to/page', 'params': '?name=JohnDoe&age=25#section1', 'query': 'name=JohnDoe&age=25', 'fragment': 'section1'},
+        {'scheme': None, 'site': None, 'path': None, 'param': None, 'query': None, 'fragment': None},
+        {'scheme': None, 'site': None, 'path': None, 'param': None, 'query': None, 'fragment': None},
+        {'scheme': 'https', 'site': 'www.soft9000.com', 'path': None, 'param': None, 'query': None, 'fragment': None},
+        {'scheme': 'https', 'site': 'www.example.com', 'path': '/path/to/page', 'param': '?name=JohnDoe&age=25#section1', 'query': 'name=JohnDoe&age=25', 'fragment': 'section1'},
     ]
     for ss, result in enumerate([None, '', 
                                  'https://www.soft9000.com',
