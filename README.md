@@ -1,12 +1,21 @@
 # Overview
-Two different workflows here:
+From destroying families for lack of a pronoun to the destruction of Canadian truck-driver for a right to protest, can anyone yet doubt that we've seen the ugliest side of pop culture?
+
+Most of us abandoning the social medias the moment our own governments decided to turn our very own posts against us… but who’s community were our friends, anyway?
+
+So this project is a way to share, serve, and protect our content from marauding 'haters. The NexusProject Module is  all about that.
+
+# Operations
+
+Three different workflows here:
 
 First - and as expected - we simply need to create + manage a default RssProject.
 
 Secondly - and a tad more complex - we need to update an existing RSS site. 
 For reasons of simplicity we're assuming we've created it. 
 
-File.FileTypes is presently hard-coded... also saved time.
+Thirdly - We'll need to download, decode, and browse out content-secured 'stuff.
+
 
 # RssIO
 A Pythonic way to read, write, and manage as many Really Simply Syndications as possible.
