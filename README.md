@@ -5,7 +5,7 @@ Most of us abandoning the social medias the moment our own governments decided t
 
 So this project is a way to share, serve, and protect our content. Of the modules herein, the RssNexus Module is the easiest path for the 'share' and the 'serve.'
 
-Protecting our 'stuff from marauding 'haters is where we've cobbled together a very simple special sauce. The NexusProject Module is all about sharing our sfuff with friends, not woes.
+Protecting our 'stuff from marauding 'haters is where we've cobbled together a very customizable special sauce. The NexusProject Module is all about sharing our content with our friends, not our woes!
 
 # Operations
 
