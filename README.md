@@ -3,9 +3,9 @@ From destroying families for lack of a pronoun to the destruction of Canadian tr
 
 Most of us abandoning the social medias the moment our own governments decided to turn our very own posts against us… but who’s community were our friends, anyway?
 
-So this project is a way to share, serve, and protect our content. RssNexus is the easiest path for the 'share' and the 'serve.'
+So this project is a way to share, serve, and protect our content. Of the modules herein, the RssNexus Module is the easiest path for the 'share' and the 'serve.'
 
-Protecting our 'stuff from marauding 'haters is where we've cobbled together a very simple special sauce. The NexusProject Module is  all about that.
+Protecting our 'stuff from marauding 'haters is where we've cobbled together a very simple special sauce. The NexusProject Module is all about sharing our sfuff with friends, not woes.
 
 # Operations
 
@@ -21,6 +21,9 @@ Thirdly - We'll need to download, decode, and browse out content-secured 'stuff.
 
 # RssIO
 A Pythonic way to read, write, and manage as many Really Simply Syndications as possible.
+
+# SecIO
+Pluggable security protocols. Horrifically updatable.
 
 # RssNexus
 A faster / less error prone way to  skin & RSS our content. Perfect for static websites.
@@ -43,7 +46,7 @@ A default template is provided. Feel free to change it and / or create your own 
 to use from within your `input` file updates.
 
 # Test Cases
-... tell what's whut, thus far.
+Show how it's done.
 
 ## zSupport?
 If you want to support the effort, I seek no donations. Instead, simply feel free to purchase one of [my educational](https://www.udemy.com/user/randallnagy2/) or [printed](https://www.amazon.com/Randall-Nagy/e/B08ZJLH1VN?ref=sr_ntt_srch_lnk_1&qid=1660050704&sr=8-1) productions?
