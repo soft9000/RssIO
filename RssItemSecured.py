@@ -1,5 +1,6 @@
 from RssItemMeta import RSSItemMeta
 from Content import ContentFile
+from SecIO import Enigma
 
 
 class RSSItemSecured(RSSItemMeta):
@@ -19,14 +20,14 @@ class RSSItemSecured(RSSItemMeta):
     def en(self)->bool:
         '''Protect the ['text'].'''
         protocol = self.user_json['security']
-        proto = RSSItemSecured(protocol)
+        proto = Enigma(protocol)
         self.user_json['text'] = proto.en(self.user_json['text'])
         return True
     
     def de(self)->bool:
         '''Restore the ['text'].'''
         protocol = self.user_json['security']
-        proto = RSSItemSecured(protocol)
+        proto = Enigma(protocol)
         self.user_json['text'] = proto.de(self.user_json['text'])
         return True
  

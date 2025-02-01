@@ -14,7 +14,7 @@ from SecIO import Enigma
 
 from RssItemSecured import RSSItemSecured
 
-class RssSite:
+class RSSSite:
     ''' An RssSite is designed to read any single `input` folder, skin the text using any input-defined 
     `template` file, then place the results into a single `output` folder. Security parameters enable 
     several built-in content protection options.
@@ -28,6 +28,7 @@ class RssSite:
     Enjoy,
 
     Randall Nagy
+    https://ko-fi.com/randallnagy
     
     '''
     PREFIX = '[HTML prefix usually here - braces not required.]'
@@ -43,7 +44,7 @@ class RssSite:
         self.home_dir = root_folder
         sec = Enigma() # default encoding
         self.url = sec.assign(site_url)
-        self.rss_file = FileTypes.home(self.home_dir, RssSite.RSS_NODE)
+        self.rss_file = FileTypes.home(self.home_dir, RSSSite.RSS_NODE)
         nexus_folder = NexusFolder()
         nexus_folder.assign(FileTypes.home(root_folder, 'input'), FileTypes.home(root_folder, 'output'), FileTypes.home(root_folder, 'templates'))
         default_template = FileTypes.home(nexus_folder.template_dir, FileTypes.DEFAULT_FILE_TEMPLATE)
@@ -99,7 +100,7 @@ class RssSite:
 
     @staticmethod
     def load_item(filename:str)->RSSItemSecured:
-        topic = RssSite.get_content_file(filename)
+        topic = RSSSite.get_content_file(filename)
         if topic:
             json = topic.read_json()
             if not json:
@@ -116,9 +117,9 @@ class RssSite:
             if not self.nexus.nexus_folders.create_folders(self.home_dir): # create input, output, and template folders
                 return False
         if not self.nexus.template.exists():                # create default template file
-            if not self.nexus.template.create_template_file(RssSite.PREFIX, RssSite.SUFFIX):
+            if not self.nexus.template.create_template_file(RSSSite.PREFIX, RSSSite.SUFFIX):
                 return False
-        zurl = FileTypes.home(self.url, RssSite.RSS_NODE)
+        zurl = FileTypes.home(self.url, RSSSite.RSS_NODE)
         rss_feed = RSSFeed("Channel / Site Title", "Description of this RSS channel or site", zurl)
         if not self.exists():
             if not RSSFeed.save(rss_feed, FileTypes.home(self.home_dir, FileTypes.DEFAULT_FILE_RSS)): # create the default RSS Channel
@@ -126,7 +127,7 @@ class RssSite:
         # Final - README, info.
         readme = FileTypes.home(self.home_dir, FileTypes.DEFAULT_FILE_README)
         with open(readme, 'w') as fh:
-            fh.write(RssSite.__doc__)
+            fh.write(RSSSite.__doc__)
             fh.write('Security protocols include:\n')
             for key in Enigma.protocols:
                 dev = 'unsupported' if Enigma.Sec[key][2] == None else 'supported'
@@ -135,7 +136,7 @@ class RssSite:
     
     def update(self)->bool:
         '''Update the RSS feed.'''
-        feed = RssSite.read_feed(self.rss_file)
+        feed = RSSSite.read_feed(self.rss_file)
         if not feed:
             return False
         self.nexus.nexus_files.clear()
@@ -172,7 +173,7 @@ def test_cases(debug=False):
     <generator>https://github.com/soft9000/RssIO</generator>
   </channel>
 </rss>"""
-    site = RssSite(tsite,"https://www.soft9000.com")
+    site = RSSSite(tsite,"https://www.soft9000.com")
     rss_file = FileTypes.home(site.nexus.nexus_folders.out_dir, FileTypes.DEFAULT_FILE_RSS)
     if not site.create():
         raise RssException('Site creation failure.')

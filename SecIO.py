@@ -35,9 +35,9 @@ def from_octal(octal_string):
 class Enigma:
     '''Secured URL dection / creation with detected-content encoders / decoders.'''   
     Sec = { # procols should remain case-sensitive, please
-        'DEFAULT' : [1000,'?default',   None],
-        'OCTAL'   : [2000,'?octal',     None],
-        'HEX'     : [3000,'?hex',       None],
+        'DEFAULT' : [1000,'?default',   True],
+        'OCTAL'   : [2000,'?octal',     True],
+        'HEX'     : [3000,'?hex',       True],
         'LOCAL'   : [9000,'?local',     None]
         }
     
