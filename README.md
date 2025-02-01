@@ -1,6 +1,8 @@
 # Overview
 From destroying families for lack of a pronoun to the destruction of Canadian truck-drivers for a right to protest, can anyone yet doubt that we've seen the ugliest side of pop culture?
 
+Not since the rise of Nazi Germany, the CCP, China bordering Koreas & Vietnams, the former Soviet Union - or other socialist 'Utopias' - has our planet witnessed so much media and state-hate, friends!
+
 Most of us abandoning the social medias the moment our own governments decided to turn our very own posts against us… but who’s community were our friends, anyway?
 
 So this project is a way to share, serve, and protect our content. Of the modules herein, the RssNexus Module is the easiest path for the 'share' and the 'serve.'
