@@ -1,4 +1,7 @@
-'''Common File 'Meta. Some day to be properties when externalized.'''
+#!/usr/bin/env python3
+# SecIO.py: Common File 'Meta. Some day to be properties when externalized.
+# Rev 0.01
+# Status: Lightly tested.
 
 class FileTypes:
     SEP = '/'

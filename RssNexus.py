@@ -18,7 +18,8 @@ import os
 import os.path
 import shutil
 from Files import *
-from RssIO import RSSItem, RSSFeed
+from RssItemMeta import RSSItemMeta
+from RssIO import RSSFeed
 from Content import ContentFile
 from RssTemplate import RssTemplateFile
 
@@ -30,7 +31,7 @@ class NexusFile:
         RSSItem is_robust, which it ain't when we're initialized. '''
         self.content_file = content_file
         self._template = RssTemplateFile(FileTypes.DEFAULT_FILE_TEMPLATE)
-        self._rss_item = RSSItem('','','')
+        self._rss_item = RSSItemMeta('','','')
     
     def get_content(self) -> str:
         ''' Load / reload the JSON content file. '''
@@ -39,7 +40,7 @@ class NexusFile:
             data = content.read_json()
             if not data:
                 return None
-            self._rss_item = RSSItem(data['title'], data['description'], data['link'], data['pubDate']) 
+            self._rss_item = RSSItemMeta(data['title'], data['description'], data['link'], data['pubDate']) 
             if not data['template'] == FileTypes.DEFAULT_FILE_TEMPLATE:
                 self._template = RssTemplateFile(data['template'])
             return data['text']           
@@ -47,7 +48,7 @@ class NexusFile:
             pass
         return None
 
-    def get_item(self)->RSSItem:
+    def get_item(self)->RSSItemMeta:
         ''' Get the RSS item. '''
         return self._rss_item
 
@@ -220,10 +221,10 @@ class RSSNexus:
         ''' See if the Nexus folders exist. '''
         return self.nexus_folders.exists()
     
-    def set_meta(self, rss_feed:RSSItem)->bool:
+    def set_meta(self, rss_feed:RSSItemMeta)->bool:
         '''Copy-in the metadata (isa RSSFeed!) that this channel Nexus will use - no items, please.'''
         if rss_feed and rss_feed.is_robust():
-            self.rss_item = RSSItem(rss_feed.title, rss_feed.description, rss_feed.link, rss_feed.pubDate)
+            self.rss_item = RSSItemMeta(rss_feed.title, rss_feed.description, rss_feed.link, rss_feed.pubDate)
             return True
         else:
             return False
@@ -248,7 +249,7 @@ class RSSNexus:
                 raise RssException(f'Error 004: RSS Item {ss} is not robust.')
         return True
 
-    def generate(self, web_root_url) -> bool:
+    def generate(self, web_root_url, protect=True) -> bool:
         ''' Generate the RSS feed and z static site. Raises an RssException in error. '''
         self.validate()
         rss_feed = RSSFeed(self.rss_item.title, self.rss_item.description, self.rss_item.link, self.rss_item.pubDate)

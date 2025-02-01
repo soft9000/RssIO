@@ -3,14 +3,16 @@
 # Rev 0.04
 # Status: R&D.
 
-
 # 2025/01/24: Created + shared at https://github.com/soft9000/RssIO
+
 import os
 import shutil
 from RssIO import *
 from RssNexus import *
 from Content import ContentFile
 from SecIO import Enigma
+
+from RssItemSecured import RSSItemSecured
 
 class RssSite:
     ''' An RssSite is designed to read any single `input` folder, skin the text using any input-defined 
@@ -87,6 +89,25 @@ class RssSite:
             return False
         return self.nexus.exists()
     
+    @staticmethod
+    def get_content_file(filename:str)->ContentFile:
+        from Content import ContentFile
+        topic = ContentFile(filename)
+        if not topic.read_json():
+            return None
+        return topic
+
+    @staticmethod
+    def load_item(filename:str)->RSSItemSecured:
+        topic = RssSite.get_content_file(filename)
+        if topic:
+            json = topic.read_json()
+            if not json:
+                return None
+            item = RSSItemSecured(json)
+            return item
+        return None
+    
     def create(self)->bool:
         '''Assert site folders, default template, and a default RSS feed.'''
         if not os.path.exists(self.home_dir): 
@@ -121,13 +142,12 @@ class RssSite:
         for file in os.listdir(self.nexus.input_dir):
             if file.endswith(ContentFile.FILE_TYPE):
                 # STEP: Get the meta from the topic / json file.
-                node = FileTypes.home(self.nexus.input_dir, file)
-                topic = ContentFile(node)
-                if not topic.read_json():
-                    continue
-                item = RSSItem(topic.title, topic.description, topic.url, topic.date)
-                feed.add_item(item)
-                self.nexus.add_item(NexusFile(node))
+                fqfilename = FileTypes.home(self.nexus.input_dir, file)
+                sec_item = self.load_item(fqfilename)
+                if not sec_item:
+                    raise RssException(f"Unable to import {fqfilename}.")
+                feed.add_item(sec_item)                     # uses securable meta
+                self.nexus.add_item(NexusFile(fqfilename))  # uses common meta (TODO: Could combine!)
 
         # STEP: Merge the template with the input topic.
         if not self.nexus.generate(self.url, True):
@@ -186,7 +206,7 @@ def test_cases(debug=False):
             if os.path.exists(cfile):
                 raise RssException(f'Unable to remove {cfile}.')
     
-    # STEP: Complex content creations
+    # STEP: Complex content creations (secured)
     
     # STEP: Remove Test Site / Reset Test Case
     if not debug and not site.rmtree():

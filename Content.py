@@ -1,9 +1,10 @@
 #!/usr/bin/env python3
-# TopicTemplate.py: An multi=template RSS content skinner + static feed burner.
+# Content.py: An multi=template RSS content skinner + static feed burner.
 # Rev 0.02
 # Status: Lightly tested.
 
 # 2025/01/25: Created + shared at https://github.com/soft9000/RssIO
+
 import os.path
 import json, time
 from Files import *
@@ -20,6 +21,7 @@ class ContentFile:
         "description": "Sample Description",
         "template": DEFAULT_TEMPLATE,
         "pubDate": time.ctime(),
+        "security": "DEFAULT",
         "link": '',
         "text": "Sample text content."
     }

@@ -20,65 +20,12 @@ import email.utils
 import xml.etree.ElementTree as ET
 
 from RssExceptions import RssException
+from RssItemSecured import RSSItemSecured
 
-class RSSItem:
-    def __init__(self, title, description, link, date_str=time.ctime()):
-        self._title = title
-        self._link = link
-        self._description = description
-        try:
-            _ = email.utils.parsedate_to_datetime(date_str)
-            self._pubDate = date_str
-        except:
-            self._pubDate = time.ctime()
-
-    def is_robust(self):
-        ''' A simple test to see if the item is ready for prime time.'''
-        return self._title and self._link and self._description
-   
-    def try_pubDate(self, date_str)->bool:
-        ''' Attempt to set the pubDate. Return True if successful.'''
-        try:
-            _ = email.utils.parsedate_to_datetime(date_str)
-            self._pubDate = date_str
-            return True
-        except:
-            return False
-
-    @property
-    def title(self):
-        return self._title
-
-    @title.setter
-    def title(self, value):
-        self._title = value
-
-    @property
-    def link(self):
-        return self._link
-
-    @link.setter
-    def link(self, value):
-        self._link = value
-
-    @property
-    def description(self):
-        return self._description
-
-    @description.setter
-    def description(self, value):
-        self._description = value
-
-    @property
-    def pubDate(self):
-        return self._pubDate
-
-    @pubDate.setter
-    def pubDate(self, value):
-        self._pubDate = value
+from RssItemMeta import RSSItemMeta
 
 
-class RSSFeed(RSSItem):
+class RSSFeed(RSSItemMeta):
     this_project = 'https://github.com/soft9000/RssIO'
 
     def __init__(self, title, description, link, date_str=time.ctime()):
@@ -119,6 +66,7 @@ class RSSFeed(RSSItem):
         return True
 
     def to_string(self):
+        '''Converts an entire RSS feed - channel as well as any topics - to a string.'''
         rss = ET.Element('rss', version='2.0')
         channel = ET.SubElement(rss, 'channel')
         ET.SubElement(channel, 'title').text = self._title
@@ -140,6 +88,7 @@ class RSSFeed(RSSItem):
     
     @staticmethod
     def load(filename):
+        '''Loads an entire RSS feed - channel as well as any topics - from a file.'''
         feed = RSSFeed(None, None, None)
         if not os.path.exists(filename):
             return None
@@ -166,13 +115,14 @@ class RSSFeed(RSSItem):
             description = item.find('description').text
             pubDate = item.find('pubDate')
             if pubDate is None:
-                feed._items.append(RSSItem(title, link, description)) # use today's date
+                feed._items.append(RSSItemMeta(title, link, description)) # use today's date
             else:
-                feed._items.append(RSSItem(title, link, description, pubDate.text))
+                feed._items.append(RSSItemMeta(title, link, description, pubDate.text))
         return feed
 
     @staticmethod
     def save(feed, filename):
+        '''Saves an entire RSS feed - channel as well as any topics - to a file.'''
         feed.use_default_generator()
         xstring = RSSFeed.to_string(feed)
         with open(filename, 'w') as f:
