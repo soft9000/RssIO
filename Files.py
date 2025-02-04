@@ -21,6 +21,14 @@ class FileTypes:
         while node and node.endswith(sep):
             node = node[:-1]
         return node
+    
+    @staticmethod
+    def fsdetox(node)->str:
+        '''File-system normalizations'''
+        if not node:
+            return ''
+        node = node.replace('\\', '/')
+        return FileTypes.detox(node)
 
     @staticmethod
     def last_name(node:str, sep=SEP)->str:

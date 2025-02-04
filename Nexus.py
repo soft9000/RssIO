@@ -53,10 +53,7 @@ class RSSSite:
             root_folder = site_url
         _dict = UrlParser.parse(root_folder)
         if _dict['site'] is not None:
-            if ContentFile.ALL_PROJECTS.endswith('/'):
-                root_folder = ContentFile.ALL_PROJECTS + _dict['site']
-            else:
-                root_folder = ContentFile.ALL_PROJECTS + '/' + _dict['site']
+                root_folder = FileTypes.detox(ContentFile.ALL_PROJECTS) + '/' + _dict['site']
         self.home_dir = root_folder
         self.url = site_url
         self.rss_file = FileTypes.home(self.home_dir, RSSSite.RSS_NODE)
@@ -64,6 +61,13 @@ class RSSSite:
         nexus_folder.assign(FileTypes.home(root_folder, 'input'), FileTypes.home(root_folder, 'output'), FileTypes.home(root_folder, 'templates'))
         default_template = FileTypes.home(nexus_folder.template_dir, FileTypes.DEFAULT_FILE_TEMPLATE)
         self.nexus = RSSNexus(nexus_folder, RssTemplateFile(default_template))
+    
+    @staticmethod
+    def equals(a, b)->bool:
+        '''See if the folders are the same.'''
+        if a and b:
+            return a.home_dir == b.home_dir
+        return False
     
     def add_item(self, item:NexusFile)->bool:
         '''Add a NexusFile to the RSSSite.'''
