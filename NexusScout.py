@@ -22,7 +22,7 @@ def locate_sites(root=ContentFile.ALL_PROJECTS, nexi=RSSSite.RSS_NODE)->list:
                 zdir = FileTypes.fsdetox(zdir)
                 if zdir.find('/output') == -1:
                     continue
-                results.append(RSSSite(zdir.replace('/output',''), None))
+                results.append(RSSSite(zdir.replace('/output','')))
     return results
 
 def test_cases(debug=False):
@@ -43,7 +43,7 @@ def test_cases(debug=False):
         <generator>https://github.com/soft9000/RssIO</generator>
     </channel>
     </rss>"""        
-        site = RSSSite(tsite,f"https://www.{dum}.foo")
+        site = RSSSite(tsite)
         if not site.setup():
             raise RssException('Site creation failure.')
         if not site.rss_replace(rss_str):

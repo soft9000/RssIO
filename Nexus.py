@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 # Nexus.py: Manage a site's RSS feed, templates, and more.
-# Rev 0.06
+# Rev 0.07
 # Status: R&D.
 
 # 2025/01/24: Created + shared at https://github.com/soft9000/RssIO
@@ -44,23 +44,30 @@ class RSSSite:
     
     RSS_NODE = FileTypes.DEFAULT_FILE_RSS
 
-    def __init__(self, root_folder, site_url):
+    def __init__(self, site_url):
+        '''Use the site name for the folder name.'''
         if not site_url:
             site_url = 'https://www.myzite9000.com'
-        if not root_folder:
-            root_folder = site_url.split('/')[-1:][0]
-        if not root_folder:
-            root_folder = site_url
-        _dict = UrlParser.parse(root_folder)
+        _dict = UrlParser.parse(site_url)
+        root_folder = site_url
         if _dict['site'] is not None:
                 root_folder = FileTypes.detox(ContentFile.ALL_PROJECTS) + '/' + _dict['site']
         self.home_dir = root_folder
-        self.url = site_url
-        self.rss_file = FileTypes.home(self.home_dir, RSSSite.RSS_NODE)
+        self.url = site_url  
         nexus_folder = NexusFolder()
         nexus_folder.assign(FileTypes.home(root_folder, 'input'), FileTypes.home(root_folder, 'output'), FileTypes.home(root_folder, 'templates'))
         default_template = FileTypes.home(nexus_folder.template_dir, FileTypes.DEFAULT_FILE_TEMPLATE)
         self.nexus = RSSNexus(nexus_folder, RssTemplateFile(default_template))
+        self.rss_file = FileTypes.home(self.nexus.nexus_folders.out_dir, RSSSite.RSS_NODE)
+        try:
+            rss = RSSFeed.load(self.rss_file)
+            if rss and rss.link:
+                _dict = UrlParser.parse(rss.link)
+                scheme =  _dict['scheme']; site = _dict['site']
+                if scheme and site:
+                    self.url = _dict['scheme'] + "://" + _dict['site']
+        except:
+            pass
     
     @staticmethod
     def equals(a, b)->bool:
@@ -215,12 +222,12 @@ def test_cases(debug=False):
 <rss version="2.0">   
   <channel>
     <title>Channel / Site Title</title>
-    <link>https://www.soft9000.com/nexus.rss</link>
+    <link>https://www.MySite.org/nexus.rss</link>
     <description>Description of this RSS channel or site</description>
     <generator>https://github.com/soft9000/RssIO</generator>
   </channel>
 </rss>"""
-    site = RSSSite(tsite,"https://www.soft9000.com")
+    site = RSSSite(tsite)
     if not site.setup():
         raise RssException('Site creation failure.')
     if not site.rss_replace(rss_str):
