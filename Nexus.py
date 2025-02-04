@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-# NexusProject.py: Manage a site's RSS feed, templates, and more.
+# Nexus.py: Manage a site's RSS feed, templates, and more.
 # Rev 0.05
 # Status: R&D.
 
@@ -29,9 +29,9 @@ class RSSSite:
     your own template file(s) to use from within your `input` file(s.)
     
     (2) The default security is clear-text. Anyone waneeding (want + needing =) additional security should 
-    update either this code or request one of the no-risk encodings, below. BE SURE TO UNDERSTAND THE RISK
-    OF OVERLY PROTECTING YOUR PUBLIC CONTENT FROM PRYING EYES - DON'T DO ANYTHING THAT WILL LAND YOU IN 
-    PRISON!
+    update either this code or request one of the no-risk encodings, below. THIS PROJECT IS INTENDED FOR USE 
+    WITH PUBLIC SECUTITY PROTOCOLS, ONLY. BE SURE TO UNDERSTAND THE RISK OF PRIVATELY PROTECTING YOUR CONTENT 
+    FROM GOVERNMENTAL EYES. DON'T DO ANYTHING THAT WILL LAND YOU IN PRISON!
 
     Enjoy,
 

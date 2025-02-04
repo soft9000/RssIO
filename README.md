@@ -26,6 +26,9 @@ A Pythonic way to read, write, and manage as many Really Simply Syndications as 
 # A SecIO Module
 Pluggable security protocols. Horrifically updatable.
 
+NOTE: THIS PROJECT IS INTENDED FOR USE WITH PUBLIC SECUTITY PROTOCOLS. BE SURE TO UNDERSTAND THE RISK OF 
+PRIVATELY PROTECTING YOUR CONTENT FROM GOVERNMENTAL EYES. DON'T DO ANYTHING THAT WILL LAND YOU IN PRISON.
+
 # A RssNexus Module
 A faster / less error prone way to  skin & RSS our content. Perfect for static websites.
 
