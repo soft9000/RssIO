@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # Content.py: An multi=template RSS content skinner + static feed burner.
 # Rev 0.02
-# Status: Lightly tested.
+# Status: Testing Success.
 
 # 2025/01/25: Created + shared at https://github.com/soft9000/RssIO
 
@@ -13,8 +13,9 @@ from RssExceptions import RssException
 
 class ContentFile:
 
-    FILE_TYPE = FileTypes.FT_IN
+    FILE_TYPE = FileTypes.FT_IN                          # Default file type for content files.
     DEFAULT_TEMPLATE = FileTypes.DEFAULT_FILE_TEMPLATE   # NOT the FILE_TYPE!
+    ALL_PROJECTS = './'                                  # Location where RSS all projects should go.
 
     JSON_FIELD_SET = {
         "title": "Sample Title",

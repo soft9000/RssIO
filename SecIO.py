@@ -3,6 +3,10 @@
 # Rev 0.01
 # Status: Lightly tested.
 
+'''THIS PROJECT IS INTENDED FOR USE WITH PUBLIC SECURITY PROTOCOLS. BE SURE TO UNDERSTAND 
+THE RISK OF PRIVATELY PROTECTING YOUR CONTENT FROM GOVERNMENTAL EYES. DON'T DO ANYTHING 
+THAT WILL LAND YOU IN PRISON!'''
+
 from UrlIO import UrlParser
 
 def to_hex(input_string):
@@ -67,7 +71,8 @@ class Enigma:
             url = url[:pos]
         return url + Enigma.PROTOCOL_DATA[self.security][1]
     
-    def identify(self):
+    def identify(self)->int:
+        '''Return the protocol number. -1 if not found.'''
         if not self.security:
             return -1
         which = Enigma.PROTOCOL_DATA[self.security]
@@ -76,6 +81,7 @@ class Enigma:
         return which[0]      
     
     def en(self, data:str)->str:
+        '''Encode the string, if possible. Returns unmodified string if protocol is not available.'''
         match self.identify():
             case 1000:
                 pass
@@ -88,6 +94,7 @@ class Enigma:
         return data
     
     def de(self, data:str)->str:
+        '''Encode the string, if possible. Returns unmodified string if protocol is not available.'''
         match self.identify():
             case 1000:
                 pass

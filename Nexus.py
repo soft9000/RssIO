@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 # Nexus.py: Manage a site's RSS feed, templates, and more.
-# Rev 0.05
+# Rev 0.06
 # Status: R&D.
 
 # 2025/01/24: Created + shared at https://github.com/soft9000/RssIO
@@ -11,8 +11,8 @@ from RssIO import *
 from RssNexus import *
 from Content import ContentFile
 from SecIO import Enigma
-
-from RssItemSecured import RSSItemSecured
+from UrlIO import UrlParser
+        
 
 class RSSSite:
     '''An RssSite is designed to read any single `input` folder, skin the text using any input-defined 
@@ -29,7 +29,7 @@ class RSSSite:
     your own template file(s) to use from within your `input` file(s.)
     
     (2) The default security is clear-text. Anyone waneeding (want + needing =) additional security should 
-    update either this code or request one of the no-risk encodings, below. THIS PROJECT IS INTENDED FOR USE 
+    update either this code or use one of the no-risk encodings, below. THIS PROJECT IS INTENDED FOR USE 
     WITH PUBLIC SECURITY PROTOCOLS, ONLY. BE SURE TO UNDERSTAND THE RISK OF PRIVATELY PROTECTING YOUR CONTENT 
     FROM GOVERNMENTAL EYES. DON'T DO ANYTHING THAT WILL LAND YOU IN PRISON!
 
@@ -49,6 +49,14 @@ class RSSSite:
             site_url = 'https://www.myzite9000.com'
         if not root_folder:
             root_folder = site_url.split('/')[-1:][0]
+        if not root_folder:
+            root_folder = site_url
+        _dict = UrlParser.parse(root_folder)
+        if _dict['site'] is not None:
+            if ContentFile.ALL_PROJECTS.endswith('/'):
+                root_folder = ContentFile.ALL_PROJECTS + _dict['site']
+            else:
+                root_folder = ContentFile.ALL_PROJECTS + '/' + _dict['site']
         self.home_dir = root_folder
         self.url = site_url
         self.rss_file = FileTypes.home(self.home_dir, RSSSite.RSS_NODE)
@@ -105,7 +113,6 @@ class RSSSite:
             os.remove(self.rss_file) # exception ok here.
         return True
 
-
     def folders_exist(self)->bool:
         ''' See if the folders exist. '''
         if not os.path.exists(self.home_dir): 
@@ -114,6 +121,7 @@ class RSSSite:
     
     @staticmethod
     def get_content_file(filename:str)->ContentFile:
+        '''Concoct + return a ContentFile from a qualified fine-name.'''
         from Content import ContentFile
         topic = ContentFile(filename)
         if not topic.read_json():
@@ -122,6 +130,7 @@ class RSSSite:
 
     @staticmethod
     def load_item(filename:str)->RSSItemSecured:
+        '''Read the JSON from a qualified file-name.'''
         topic = RSSSite.get_content_file(filename)
         if topic:
             json = topic.read_json()
@@ -140,7 +149,7 @@ class RSSSite:
         return os.path.exists(self.rss_file)
     
     def setup(self)->bool:
-        '''Crerate a default set of site folders, a default template, and a default RSS feed.'''
+        '''Create a default set of site folders, a default template, as well as a default RSS feed.'''
         if not os.path.exists(self.home_dir): 
             os.mkdir(self.home_dir)                         # create root folder
         self.rss_file = FileTypes.home(self.nexus.nexus_folders.out_dir, FileTypes.DEFAULT_FILE_RSS)   
@@ -189,7 +198,6 @@ class RSSSite:
                 self.nexus.add_item(NexusFile(fqfilename))  # uses common meta
         return self.nexus.item_count()
 
-
     def read_feed(self)->RSSFeed:
         '''Read an instance of the RSSFeed, if found.'''
         self.nexus.rss_channel =  RSSFeed.load(self.rss_file)
@@ -198,7 +206,7 @@ class RSSSite:
 def test_cases(debug=False):
     print(f"***** Testing Module {__name__}.")
     # STEP: Default Site Creation + Load + Existance
-    tsite = './Test001'
+    tsite = 'http://www.MySite.org'
     rss_str = """<?xml version="1.0" ?>
 <rss version="2.0">   
   <channel>
@@ -240,6 +248,8 @@ def test_cases(debug=False):
         os.remove(icfile)
         if os.path.exists(icfile):
             raise RssException(f'Unable to remove {icfile}.')
+
+    # STEP: Complex content creations (secured)   
     from SecIO import Enigma
     for node in Enigma.PROTOCOL_KEYS:
         icfile = site.create_input_file(node,security=node)
@@ -255,11 +265,9 @@ def test_cases(debug=False):
             raise RssException(f"JSON I/O Error [{jdict}], [{icfile}]")
         if not site.add_item(NexusFile(icfile)):
             raise RssException(f"Unable to add {icfile} content to {site.rss_file}.")
-    
+
     if not site.generate():
         raise RssException(f"Unable to re-create {site.rss_file}")
-
-    # STEP: Complex content creations (secured)
     
     # STEP: Remove Test Site / Reset Test Case
     if not debug and not site.rmtree():
