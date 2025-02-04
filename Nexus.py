@@ -30,7 +30,7 @@ class RSSSite:
     
     (2) The default security is clear-text. Anyone waneeding (want + needing =) additional security should 
     update either this code or request one of the no-risk encodings, below. THIS PROJECT IS INTENDED FOR USE 
-    WITH PUBLIC SECUTITY PROTOCOLS, ONLY. BE SURE TO UNDERSTAND THE RISK OF PRIVATELY PROTECTING YOUR CONTENT 
+    WITH PUBLIC SECURITY PROTOCOLS, ONLY. BE SURE TO UNDERSTAND THE RISK OF PRIVATELY PROTECTING YOUR CONTENT 
     FROM GOVERNMENTAL EYES. DON'T DO ANYTHING THAT WILL LAND YOU IN PRISON!
 
     Enjoy,
