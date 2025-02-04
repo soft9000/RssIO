@@ -20,22 +20,21 @@ import email.utils
 import xml.etree.ElementTree as ET
 
 from RssExceptions import RssException
-from RssItemSecured import RSSItemSecured
-
+from Content import ContentFile
 from RssItemMeta import RSSItemMeta
 
 
 class RSSFeed(RSSItemMeta):
     this_project = 'https://github.com/soft9000/RssIO'
 
-    def __init__(self, title, description, link, date_str=time.ctime()):
-        super().__init__(title, description, link, date_str)
+    def __init__(self, json=None):
+        super().__init__(json)
         self._generator = RSSFeed.this_project
         self._items = []
 
     def is_robust(self):
         ''' A simple test to see if the feed header is ready for prime time.'''
-        return self._title and self._link and self._description
+        return self.title and self.link and self.description
 
     def use_default_generator(self):
         ''' Use the default project string as the generator tag.'''
@@ -69,11 +68,11 @@ class RSSFeed(RSSItemMeta):
         '''Converts an entire RSS feed - channel as well as any topics - to a string.'''
         rss = ET.Element('rss', version='2.0')
         channel = ET.SubElement(rss, 'channel')
-        ET.SubElement(channel, 'title').text = self._title
-        ET.SubElement(channel, 'link').text = self._link
-        ET.SubElement(channel, 'description').text = self._description
-        ET.SubElement(channel, 'generator').text = self._generator
-        ET.SubElement(channel, 'pubDate').text = self._pubDate
+        ET.SubElement(channel, 'title').text = self.title
+        ET.SubElement(channel, 'link').text = self.link
+        ET.SubElement(channel, 'description').text = self.description
+        ET.SubElement(channel, 'generator').text = self.generator
+        ET.SubElement(channel, 'pubDate').text = self.pubDate
         for item in self._items:
             item_elem = ET.SubElement(channel, 'item')
             ET.SubElement(item_elem, 'title').text = item.title
@@ -89,39 +88,41 @@ class RSSFeed(RSSItemMeta):
     @staticmethod
     def load(filename):
         '''Loads an entire RSS feed - channel as well as any topics - from a file.'''
-        feed = RSSFeed(None, None, None)
+        feed = RSSFeed()
         if not os.path.exists(filename):
             return None
         tree = ET.parse(filename)
         root = tree.getroot()
-        feed._title = root.find('channel/title').text
-        feed._link = root.find('channel/link').text
-        feed._description = root.find('channel/description').text
+        feed.title = root.find('channel/title').text
+        feed.link = root.find('channel/link').text
+        feed.description = root.find('channel/description').text
 
         generator = root.find('channel/generator')
         if generator is not None:
-            feed._generator = generator.text
+            feed.generator = generator.text
 
-        feed._pubDate = root.find('channel/pubDate')
-        if feed._pubDate is None:
-            feed._pubDate = time.ctime()    # use today's date
+        detect = root.find('channel/pubDate')
+        if detect is None:
+            feed.pubDate = time.ctime()    # use today's date
         else:
-            feed._pubDate = feed.pubDate.text
+            feed.pubDate = detect.text
 
         feed._items = []
         for item in root.findall('channel/item'):
-            title = item.find('title').text
-            link = item.find('link').text
-            description = item.find('description').text
+            inst = RSSItemMeta()
+            inst.title = item.find('title').text
+            inst.link = item.find('link').text
+            inst.description = item.find('description').text
             pubDate = item.find('pubDate')
             if pubDate is None:
-                feed._items.append(RSSItemMeta(title, link, description)) # use today's date
+                feed._items.append(inst) # use today's date
             else:
-                feed._items.append(RSSItemMeta(title, link, description, pubDate.text))
+                inst.pubDate = pubDate.text
+                feed._items.append(inst)
         return feed
 
     @staticmethod
-    def save(feed, filename):
+    def write_rss(feed, filename):
         '''Saves an entire RSS feed - channel as well as any topics - to a file.'''
         feed.use_default_generator()
         xstring = RSSFeed.to_string(feed)
@@ -143,7 +144,7 @@ def test_cases(debug=False):
     if os.path.exists("testing.rss"):
         os.unlink("testing.rss")
 
-    RSSFeed.save(myFeed, "testing.rss")
+    RSSFeed.write_rss(myFeed, "testing.rss")
     myFeed.use_default_generator()
     if debug:
         print(myFeed.to_string())

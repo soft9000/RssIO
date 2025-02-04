@@ -18,7 +18,8 @@ import os
 import os.path
 import shutil
 from Files import *
-from RssItemMeta import RSSItemMeta
+from RssItemSecured import RSSItemSecured
+from SecIO import Enigma
 from RssIO import RSSFeed
 from Content import ContentFile
 from RssTemplate import RssTemplateFile
@@ -31,7 +32,7 @@ class NexusFile:
         RSSItem is_robust, which it ain't when we're initialized. '''
         self.content_file = content_file
         self._template = RssTemplateFile(FileTypes.DEFAULT_FILE_TEMPLATE)
-        self._rss_item = RSSItemMeta('','','')
+        self._rss_item = RSSItemSecured(ContentFile.JSON_FIELD_SET)
     
     def get_content(self) -> str:
         ''' Load / reload the JSON content file. '''
@@ -40,7 +41,7 @@ class NexusFile:
             data = content.read_json()
             if not data:
                 return None
-            self._rss_item = RSSItemMeta(data['title'], data['description'], data['link'], data['pubDate']) 
+            self._rss_item = RSSItemSecured(data) 
             if not data['template'] == FileTypes.DEFAULT_FILE_TEMPLATE:
                 self._template = RssTemplateFile(data['template'])
             return data['text']           
@@ -48,7 +49,7 @@ class NexusFile:
             pass
         return None
 
-    def get_item(self)->RSSItemMeta:
+    def get_item(self)->RSSItemSecured:
         ''' Get the RSS item. '''
         return self._rss_item
 
@@ -82,7 +83,7 @@ class NexusFile:
                 out_file += FileTypes.SEP
             node = out_file + self._rss_item.link
             if not node.find(FileTypes.SEP) == -1:
-                node = out_file + self._rss_item.link.split(FileTypes.SEP)[-1][0]
+                node = out_file + self._rss_item.link.split(FileTypes.SEP)[-1]
             if not node.endswith(suffix):
                 node += suffix
             if os.path.exists(node):
@@ -94,18 +95,22 @@ class NexusFile:
         except:
             return None
 
-    def to_string(self, template_file:RssTemplateFile, data:str) -> bool:
-        '''Read the template with template.'''
+    def presto(self, template_file:RssTemplateFile, data:str) -> str:
+        '''Read the template with template. Secure iff applied.'''
         if not self.is_ready():
-            return False
-        content = template_file.merge_with(data)           
+            return None
+        sec = Enigma(self._rss_item.json['security'])
+        if sec is not None:
+            content = template_file.merge_with(sec.en(data))
+        else:
+            content = template_file.merge_with(data)           
         if not content:
-            return False
+            return None
         return content
     
     def create_output(self, template_file:RssTemplateFile, out_dir) -> bool:
         ''' Merge the data with the template so as to create z output file. '''
-        content = self.to_string(template_file, self.get_content())
+        content = self.presto(template_file, self.get_content())
         if not content:
             return False
         try:
@@ -200,7 +205,6 @@ class NexusFolder:
         nodes.append(file_name)
         return './' + FileTypes.SEP.join(nodes)    # parent is best
 
-    
 
 from RssExceptions import RssException
 class RSSNexus:
@@ -209,7 +213,7 @@ class RSSNexus:
         self.nexus_folders = project
         self.nexus_files = []
         self.template = template
-        self.rss_item = None
+        self.rss_channel = None
     
     def rmtree(self)->bool:
         ''' Remove the nexus - True if removed. '''
@@ -221,13 +225,19 @@ class RSSNexus:
         ''' See if the Nexus folders exist. '''
         return self.nexus_folders.exists()
     
-    def set_meta(self, rss_feed:RSSItemMeta)->bool:
+    def set_meta(self, rss_feed:RSSItemSecured)->bool:
         '''Copy-in the metadata (isa RSSFeed!) that this channel Nexus will use - no items, please.'''
         if rss_feed and rss_feed.is_robust():
-            self.rss_item = RSSItemMeta(rss_feed.title, rss_feed.description, rss_feed.link, rss_feed.pubDate)
+            self.rss_channel = rss_feed
             return True
         else:
             return False
+    
+    def item_count(self)->int:
+        '''Return the number of  items in the feed.'''
+        if self.nexus_files:
+            return len(self.nexus_files)
+        return 0
     
     def add_item(self, nexus_file:NexusFile)->bool:
         '''Safe-assign / append a NexusFile. '''
@@ -238,8 +248,8 @@ class RSSNexus:
 
     def validate(self):
         ''' Raise an exception if this Nexus is not valid. '''
-        if not self.rss_item or not self.rss_item.is_robust():
-            raise RssException("Error 001: Cannel metadata has not been assigned to this Nexus.")
+        if not self.rss_channel or not self.rss_channel.is_robust():
+            raise RssException("Error 001: Channel metadata has not been assigned to this Nexus.")
         if not self.nexus_folders or self.nexus_folders.is_null():
             raise RssException("Error 002: Nexus project has not been assigned.")
         if not self.template or not self.template.exists():
@@ -252,19 +262,23 @@ class RSSNexus:
     def generate(self, web_root_url, protect=True) -> bool:
         ''' Generate the RSS feed and z static site. Raises an RssException in error. '''
         self.validate()
-        rss_feed = RSSFeed(self.rss_item.title, self.rss_item.description, self.rss_item.link, self.rss_item.pubDate)
+        rss_feed = RSSFeed()
+        rss_feed.assign(self.rss_channel.title, self.rss_channel.description, self.rss_channel.link, self.rss_channel.pubDate)
         for ss, file_item in enumerate(self.nexus_files):
             if not file_item.create_output(self.template, self.nexus_folders.out_dir):
                 raise RssException(f'Error 100: Unable to create output for RSS Item {ss} "{file_item.get_item().title}".')
             zitem = file_item.get_item()
             lname = FileTypes.last_name(file_item.content_file)
             zitem.link = FileTypes.home(web_root_url, lname)
+            if protect and zitem.json:
+                cry = Enigma(zitem.json['security'])
+                zitem.link = cry.assign(zitem.link)
             rss_feed.add_item(zitem)
 
         home_rss      = FileTypes.home(self.nexus_folders.out_dir, FileTypes.DEFAULT_FILE_RSS)
         rss_feed.link = FileTypes.home(web_root_url,         FileTypes.DEFAULT_FILE_RSS)
 
-        if not RSSFeed.save(rss_feed, home_rss):
+        if not RSSFeed.write_rss(rss_feed, home_rss):
             raise RssException('Error 101: Unable to create the RSS meta-file.')
         return True
 
@@ -287,7 +301,10 @@ def test_cases(debug=False):
     if not content  == 'Hello, World!':
         raise RssException('Error: Unable to merge template file.')
 
-    rss_feed= RSSFeed("Testing Success", "A feed test for the manual creation", "./test_out/index.rss")
+    rss_feed= RSSFeed()
+    rss_feed.title = "Testing Success"
+    rss_feed.description = "A feed test for the manual creation"
+    rss_feed.link = "./test_out/index.rss"
     rss_nexus = RSSNexus(nexus_folders, test_template)    
     # STEP: TEST FILE MULI-FILE CONTENT FILE CREATIONS (NO RSS)
     for content in "fred", "ralph", "joe":
@@ -295,7 +312,7 @@ def test_cases(debug=False):
         content_file_name_in = FileTypes.home(nexus_folders.in_dir, znode)
         # Save the data structure into content file:
         create_json = ContentFile(content_file_name_in)
-        jdata = ContentFile.DEFAULTS
+        jdata = ContentFile.JSON_FIELD_SET
         jdata['text'] = content
         jdata['link'] = FileTypes.home(web_site, FileTypes.home(nexus_folders.out_dir, content + FileTypes.FT_OUT))
         if not create_json.write_json(jdata):
@@ -311,7 +328,7 @@ def test_cases(debug=False):
         rss_nexus.add_item(nexus_file)
 
     # STEP: TEST MANUAL RSSFeed CREATION
-    RSSFeed.save(rss_feed, FileTypes.home(nexus_folders.out_dir, "test_index.rss"))
+    RSSFeed.write_rss(rss_feed, FileTypes.home(nexus_folders.out_dir, "test_index.rss"))
 
     # STEP: TEST THE RSSFolder AUTO (mega?) GENERATOR
     rss_nexus.set_meta(rss_feed)

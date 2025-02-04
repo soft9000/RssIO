@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 # NexusProject.py: Manage a site's RSS feed, templates, and more.
-# Rev 0.04
+# Rev 0.05
 # Status: R&D.
 
 # 2025/01/24: Created + shared at https://github.com/soft9000/RssIO
@@ -42,17 +42,22 @@ class RSSSite:
         if not root_folder:
             root_folder = site_url.split('/')[-1:][0]
         self.home_dir = root_folder
-        sec = Enigma() # default encoding
-        self.url = sec.assign(site_url)
+        self.url = site_url
         self.rss_file = FileTypes.home(self.home_dir, RSSSite.RSS_NODE)
         nexus_folder = NexusFolder()
         nexus_folder.assign(FileTypes.home(root_folder, 'input'), FileTypes.home(root_folder, 'output'), FileTypes.home(root_folder, 'templates'))
         default_template = FileTypes.home(nexus_folder.template_dir, FileTypes.DEFAULT_FILE_TEMPLATE)
         self.nexus = RSSNexus(nexus_folder, RssTemplateFile(default_template))
+    
+    def add_item(self, item:NexusFile)->bool:
+        '''Add a NexusFile to the RSSSite.'''
+        if isinstance(item, NexusFile):
+            return self.nexus.add_item(item)
+        return False
 
-    def create_input_file(self, node)->str:
+    def create_input_file(self, node, security=None)->str:
         '''Create + place a node into the input folder. Content default and file suffix assured. '''
-        if not node or not self.exists():
+        if not node or not self.folders_exist():
             return None
         if node.find(FileTypes.SEP) != -1:
             node = node.split(FileTypes.SEP)[:-1]
@@ -60,7 +65,9 @@ class RSSSite:
             node += FileTypes.FT_IN
         cf = ContentFile(FileTypes.home(self.nexus.nexus_folders.in_dir, node))
         # Add as much meta as possible:
-        meta = ContentFile.DEFAULTS
+        meta = ContentFile.JSON_FIELD_SET
+        if security is not None:
+            meta['security'] = security
         core = node.replace(FileTypes.FT_IN,'')
         meta['link'] = FileTypes.home(self.url, core + FileTypes.FT_OUT)
         if not cf.write_json(meta):
@@ -69,7 +76,7 @@ class RSSSite:
 
     def rmtree(self):
         ''' Safely remove sub + project folders. Return true if / when there are none. '''
-        if not self.exists():
+        if not self.folders_exist():
             return True
         if not self.nexus.rmtree():
             return False
@@ -79,12 +86,19 @@ class RSSSite:
                 os.remove(readme)
             if len(os.listdir(self.home_dir)) == 0:
                 shutil.rmtree(self.home_dir)
-            return not self.exists()
+            return not self.folders_exist()
         except:
             pass
         return False
+    
+    def remove_rss_file(self)->bool:
+        '''Remove the RSS file, only. Returns True or an OS Exception ff the RSS files cannot be deleted.'''
+        if self.rss_file and os.path.exists(self.rss_file):
+            os.remove(self.rss_file) # exception ok here.
+        return True
 
-    def exists(self)->bool:
+
+    def folders_exist(self)->bool:
         ''' See if the folders exist. '''
         if not os.path.exists(self.home_dir): 
             return False
@@ -109,10 +123,19 @@ class RSSSite:
             return item
         return None
     
-    def create(self)->bool:
-        '''Assert site folders, default template, and a default RSS feed.'''
+    def rss_replace(self, rss_str)->bool:
+        '''Overwrite the default rss file with whatever the user needs.'''
+        if not rss_str:
+            rss_str = ''
+        with open(self.rss_file, 'w') as fh:
+            fh.write(rss_str)
+        return os.path.exists(self.rss_file)
+    
+    def setup(self)->bool:
+        '''Crerate a default set of site folders, a default template, and a default RSS feed.'''
         if not os.path.exists(self.home_dir): 
             os.mkdir(self.home_dir)                         # create root folder
+        self.rss_file = FileTypes.home(self.nexus.nexus_folders.out_dir, FileTypes.DEFAULT_FILE_RSS)   
         if not self.nexus.exists():
             if not self.nexus.nexus_folders.create_folders(self.home_dir): # create input, output, and template folders
                 return False
@@ -120,45 +143,49 @@ class RSSSite:
             if not self.nexus.template.create_template_file(RSSSite.PREFIX, RSSSite.SUFFIX):
                 return False
         zurl = FileTypes.home(self.url, RSSSite.RSS_NODE)
-        rss_feed = RSSFeed("Channel / Site Title", "Description of this RSS channel or site", zurl)
-        if not self.exists():
-            if not RSSFeed.save(rss_feed, FileTypes.home(self.home_dir, FileTypes.DEFAULT_FILE_RSS)): # create the default RSS Channel
+        rss_feed = RSSFeed()
+        rss_feed.assign("Channel / Site Title", "Description of this RSS channel or site", zurl)
+        if not self.folders_exist():
+            if not RSSFeed.write_rss(rss_feed, FileTypes.home(self.home_dir, FileTypes.DEFAULT_FILE_RSS)): # create the default RSS Channel
                 return False
         # Final - README, info.
         readme = FileTypes.home(self.home_dir, FileTypes.DEFAULT_FILE_README)
         with open(readme, 'w') as fh:
             fh.write(RSSSite.__doc__)
             fh.write('Security protocols include:\n')
-            for key in Enigma.protocols:
-                dev = 'unsupported' if Enigma.Sec[key][2] == None else 'supported'
+            for key in Enigma.PROTOCOL_KEYS:
+                dev = 'unsupported' if Enigma.PROTOCOL_DATA[key][2] == None else 'supported'
                 fh.write(f"\t{key:^10} is presently {dev}.\n")
         return os.path.exists(readme)
     
-    def update(self)->bool:
-        '''Update the RSS feed.'''
-        feed = RSSSite.read_feed(self.rss_file)
+    def generate(self)->bool:
+        '''Gentere the RSS feed, as well as any final content.'''
+        # STEP: Merge the template with the input topic.
+        feed = self.read_feed()
         if not feed:
             return False
+        if not self.nexus.generate(self.url, True):
+            return False
+        return True
+
+    def reload(self)->int:
+        '''Populate the feed with any input / json topical information.'''
         self.nexus.nexus_files.clear()
-        for file in os.listdir(self.nexus.input_dir):
+        for file in os.listdir(self.nexus.nexus_folders.in_dir):
             if file.endswith(ContentFile.FILE_TYPE):
                 # STEP: Get the meta from the topic / json file.
-                fqfilename = FileTypes.home(self.nexus.input_dir, file)
+                fqfilename = FileTypes.home(self.nexus.nexus_folders.in_dir, file)
                 sec_item = self.load_item(fqfilename)
                 if not sec_item:
                     raise RssException(f"Unable to import {fqfilename}.")
-                feed.add_item(sec_item)                     # uses securable meta
-                self.nexus.add_item(NexusFile(fqfilename))  # uses common meta (TODO: Could combine!)
+                self.nexus.add_item(NexusFile(fqfilename))  # uses common meta
+        return self.nexus.item_count()
 
-        # STEP: Merge the template with the input topic.
-        if not self.nexus.generate(self.url, True):
-            raise RssException("Error 305: Unable to generate nexus content.")
-        # STEP: Update the RSS folder to refer to the newly merged output.
-        return RSSFeed.save(feed)
 
-    def read_feed(self, rss_file:str)->RSSFeed:
+    def read_feed(self)->RSSFeed:
         '''Read an instance of the RSSFeed, if found.'''
-        return RSSFeed.load(rss_file)
+        self.nexus.rss_channel =  RSSFeed.load(self.rss_file)
+        return self.nexus.rss_channel  # none is ok
     
 def test_cases(debug=False):
     print(f"***** Testing Module {__name__}.")
@@ -174,16 +201,15 @@ def test_cases(debug=False):
   </channel>
 </rss>"""
     site = RSSSite(tsite,"https://www.soft9000.com")
-    rss_file = FileTypes.home(site.nexus.nexus_folders.out_dir, FileTypes.DEFAULT_FILE_RSS)
-    if not site.create():
+    if not site.setup():
         raise RssException('Site creation failure.')
-    with open(rss_file, 'w') as fh:
-        fh.write(rss_str)
-    feed = site.read_feed(rss_file)
+    if not site.rss_replace(rss_str):
+        pass
+    feed = site.read_feed()
     if not feed:
         raise RssException(f'Unable to RssSite.read_feed({tsite}).')
     
-    if not site.exists():
+    if not site.folders_exist():
         raise RssException("RssSite.exists() failure.")
 
     # STEP: Regression detection / string Comp
@@ -191,22 +217,40 @@ def test_cases(debug=False):
     for ss,line in enumerate(rss_str.split('\n'),1):
         bare = line.strip()
         if  _str.find(bare) == -1:
-            raise RssException(f'Line generation error {ss}: {bare}')
+            print(_str)
+            raise RssException(f'Line detection error {ss}: {bare}')
 
-    # STEP: Basic content creation
+    # STEP: Basic RSS Site UPDATE
     for node in 'foo', 'foo' + FileTypes.FT_IN:
-        cfile = site.create_input_file(node)
-        if not cfile or not os.path.exists(cfile):
-            raise RssException("Content creation failure.")
+        icfile = site.create_input_file(node)
+        if not icfile or not os.path.exists(icfile):
+            raise RssException("Input file creation failure 1.")
         
-        if not cfile.endswith(FileTypes.FT_IN):
-            raise RssException("Invaild input file type assigned.")
+        if not icfile.endswith(FileTypes.FT_IN):
+            raise RssException("Invaild input file type assigned 2.")
         
-        if not debug:
-            os.remove(cfile)
-            if os.path.exists(cfile):
-                raise RssException(f'Unable to remove {cfile}.')
+        os.remove(icfile)
+        if os.path.exists(icfile):
+            raise RssException(f'Unable to remove {icfile}.')
+    from SecIO import Enigma
+    for node in Enigma.PROTOCOL_KEYS:
+        icfile = site.create_input_file(node,security=node)
+        if not icfile or not os.path.exists(icfile):
+            raise RssException("Input file creation failure 2.")
+        
+        if not icfile.endswith(FileTypes.FT_IN):
+            raise RssException("Invaild input file type assigned 2.")
+        
+        content = ContentFile(icfile)
+        jdict = content.read_json()
+        if not content.is_current(jdict):
+            raise RssException(f"JSON I/O Error [{jdict}], [{icfile}]")
+        if not site.add_item(NexusFile(icfile)):
+            raise RssException(f"Unable to add {icfile} content to {site.rss_file}.")
     
+    if not site.generate():
+        raise RssException(f"Unable to re-create {site.rss_file}")
+
     # STEP: Complex content creations (secured)
     
     # STEP: Remove Test Site / Reset Test Case

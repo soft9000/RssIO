@@ -34,17 +34,17 @@ def from_octal(octal_string):
 
 class Enigma:
     '''Secured URL dection / creation with detected-content encoders / decoders.'''   
-    Sec = { # procols should remain case-sensitive, please
+    PROTOCOL_DATA = { # procols should remain case-sensitive, please
         'DEFAULT' : [1000,'?default',   True],
         'OCTAL'   : [2000,'?octal',     True],
         'HEX'     : [3000,'?hex',       True],
         'LOCAL'   : [9000,'?local',     None]
         }
     
-    protocols = Sec.keys()
+    PROTOCOL_KEYS = PROTOCOL_DATA.keys()
         
     def __init__(self, sec_key:str='DEFAULT'):
-        if sec_key not in Enigma.protocols:
+        if sec_key not in Enigma.PROTOCOL_KEYS:
             sec_key = 'DEFAULT'
         self.security = sec_key
         
@@ -52,8 +52,8 @@ class Enigma:
         '''Detect any security parameter. Security name Sec[key] whenever found + assigned.'''
         info = UrlParser.parse(url)
         if not UrlParser.is_null(info):
-            for key in Enigma.Sec:
-                if info['param'] == Enigma.Sec[key][1]:
+            for key in Enigma.PROTOCOL_DATA:
+                if info['param'] == Enigma.PROTOCOL_DATA[key][1]:
                     self.security = key
                     return key
         return None
@@ -65,12 +65,12 @@ class Enigma:
         pos = url.find('?')
         if not pos == -1:
             url = url[:pos]
-        return url + Enigma.Sec[self.security][1]
+        return url + Enigma.PROTOCOL_DATA[self.security][1]
     
     def identify(self):
         if not self.security:
             return -1
-        which = Enigma.Sec[self.security]
+        which = Enigma.PROTOCOL_DATA[self.security]
         if not which:
             return -1
         return which[0]      
@@ -123,7 +123,7 @@ def test_cases(debug=False):
         "https://www.soft9000.com?local"
     ]
     spaces = '\n\r\t '   
-    for ss, sec in enumerate(Enigma.protocols):
+    for ss, sec in enumerate(Enigma.PROTOCOL_KEYS):
         test = Enigma(sec)
         response = test.assign(web_site)
         if not response == responses[ss]:

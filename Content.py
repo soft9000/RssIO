@@ -16,7 +16,7 @@ class ContentFile:
     FILE_TYPE = FileTypes.FT_IN
     DEFAULT_TEMPLATE = FileTypes.DEFAULT_FILE_TEMPLATE   # NOT the FILE_TYPE!
 
-    DEFAULTS = {
+    JSON_FIELD_SET = {
         "title": "Sample Title",
         "description": "Sample Description",
         "template": DEFAULT_TEMPLATE,
@@ -30,9 +30,9 @@ class ContentFile:
         self.filename = filename
 
     def fixup(self, data):
-        for key in ContentFile.DEFAULTS:
+        for key in ContentFile.JSON_FIELD_SET:
             if key not in data:
-                data[key] = ContentFile.DEFAULTS[key]
+                data[key] = ContentFile.JSON_FIELD_SET[key]
         return None # meh
 
     def read_json(self)->dict:
@@ -46,6 +46,15 @@ class ContentFile:
 
         except json.JSONDecodeError:
             raise RssException(f"Error decoding JSON from file {self.filename}.")
+    
+    def is_current(self, jdict)->bool:
+        '''Verify dictionary has all of the present keys.'''
+        if not jdict:
+            return False
+        for key in ContentFile.JSON_FIELD_SET:
+            if not key in jdict:
+                return False
+        return True
     
     def exists(self):
         '''See if the file is on the file system.'''
@@ -75,7 +84,7 @@ def test_cases(debug=False):
     for afile in '~example', '~example'+ ContentFile.FILE_TYPE:
         file_handler = ContentFile(afile)
         
-        if not file_handler.write_json(ContentFile.DEFAULTS):
+        if not file_handler.write_json(ContentFile.JSON_FIELD_SET):
             raise RssException(f'Unable to create content for {afile}')
         
         if not file_handler.exists():
@@ -83,6 +92,8 @@ def test_cases(debug=False):
         
         data_read = file_handler.read_json()
         if data_read:
+            if not file_handler.is_current(data_read):
+                raise RssException("Invalid tag set loaded.")
             if debug:
                 print(data_read)
             else:
