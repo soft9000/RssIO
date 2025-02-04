@@ -10,7 +10,6 @@ So this project is a way to share, serve, and protect our content. Of the module
 Protecting our 'stuff from marauding 'haters is where we've cobbled together a very customizable special sauce. The NexusProject Module is all about sharing our content with our friends, not our woes!
 
 # Operations
-
 Three different workflows here:
 
 First - and as expected - we simply need to create + manage a default RssProject.
@@ -21,20 +20,20 @@ For reasons of simplicity we're assuming we've created it.
 Thirdly - We'll need to download, decode, and browse out content-secured 'stuff.
 
 
-# RssIO
+# A RssIO Module
 A Pythonic way to read, write, and manage as many Really Simply Syndications as possible.
 
-# SecIO
+# A SecIO Module
 Pluggable security protocols. Horrifically updatable.
 
-# RssNexus
+# A RssNexus Module
 A faster / less error prone way to  skin & RSS our content. Perfect for static websites.
 
 The idea is simple: We'll add any type of file into an input folder, define as many skins in the template folder as we require, then use RSSNexus to burn the final content to the output folder.
 
 Once burned to the output folder the RSS file therein will link to the same.
 
-# NexusProject
+# The Nexus Module
 RssSite is presently a work in progress. Everything else is o.k for you to use in your own.
 
 RssSite is much like RssNexus, but RssSite adds an official set of hard-wired assumptions.
@@ -47,7 +46,7 @@ Ready to upload to your site, the `output` folder will also contain the `nexus.r
 A default template is provided. Feel free to change it and / or create your own template file(s) 
 to use from within your `input` file updates.
 
-# Test Cases
+# zTest Cases
 Show how it's done.
 
 ## zSupport?

@@ -7,7 +7,7 @@ from UrlIO          import test_cases as tc_UrlIO
 from RssIO          import test_cases as tc_RssIO
 from Content        import test_cases as tc_Content
 from RssNexus       import test_cases as tc_RssNexus
-from NexusProject   import test_cases as tc_NexusProject
+from Nexus   import test_cases as tc_NexusProject
 
 tc_UrlIO()
 tc_SecIO()
@@ -15,4 +15,4 @@ tc_Files()
 tc_Content()
 tc_RssIO()
 tc_RssNexus()
-tc_NexusProject()
+tc_NexusProject(True)
