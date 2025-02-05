@@ -1,23 +1,41 @@
 #!/usr/bin/env python3
 # RssTemplate.py: Minimalist template file support.
-# Rev 0.01
+# Rev 0.02
 # Status: Lightly tested.
 
 import os, os.path
 from Files import *
 
 class RssTemplateFile:
+    
+    TEMPLATE_TOKEN = '.$NojRssIOTok$.'
 
     FILE_TYPE = FileTypes.FT_TEMPLATE
     
-    def __init__(self, template_file_name, template_token = '.$NojRssIOTok$.'):
+    def __init__(self, template_file_name, template_token = TEMPLATE_TOKEN):
         self.filename = template_file_name
         self.token = template_token
     
+    @staticmethod
+    def parse(filename:str, token:str=TEMPLATE_TOKEN):
+        '''Instantiate a template from an external template file.'''
+        try:
+            if filename and os.path.exists(filename):
+                result = RssTemplateFile(filename, token)
+                if result.read_template_file():
+                    return result
+        except:
+            pass
+        return None
+        
+    
     def exists(self):
         '''See if the template file name esists. '''
-        if self.filename:
-            return os.path.exists(self.filename)
+        try:
+            if self.filename:
+                return os.path.exists(self.filename)
+        except:
+            pass
         return False
     
     def create_template_file(self, prefix:str, suffix:str)->bool:

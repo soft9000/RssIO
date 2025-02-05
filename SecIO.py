@@ -51,6 +51,10 @@ class Enigma:
         if sec_key not in Enigma.PROTOCOL_KEYS:
             sec_key = 'DEFAULT'
         self.security = sec_key
+    
+    def tokenize(self)->str:
+        '''Concoct this Protocol's self-identifyng token.'''
+        return f'.#[{self.security}]$.'
         
     def detect(self, url)->str:
         '''Detect any security parameter. Security name Sec[key] whenever found + assigned.'''
@@ -82,12 +86,12 @@ class Enigma:
     
     def encrypt(self, data:str)->str:
         '''Create a self-identifying encryption.'''
-        token = f'.#[{self.security}]$.'
+        token = self.tokenize()
         return token + self.en(data) + token
     
     def decrypt(self, data:str)->str:
         '''Decrypt a self-identified encryption.'''
-        token = f'.#[{self.security}]$.'
+        token = self.tokenize()
         cols = data.split(token)
         match len(cols):
             case 2|3:
