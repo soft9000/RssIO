@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # SecIO.py: Mission: Support URL content-security 'ops. 
-# Rev 0.01
-# Status: Lightly tested.
+# Rev 0.02
+# Status: Tested.
 
 '''THIS PROJECT IS INTENDED FOR USE WITH PUBLIC SECURITY PROTOCOLS. BE SURE TO UNDERSTAND 
 THE RISK OF PRIVATELY PROTECTING YOUR CONTENT FROM GOVERNMENTAL EYES. DON'T DO ANYTHING 
@@ -45,7 +45,7 @@ class Enigma:
         'LOCAL'   : [9000,'?local',     None]
         }
     
-    PROTOCOL_KEYS = PROTOCOL_DATA.keys()
+    PROTOCOL_KEYS = PROTOCOL_DATA.keys()    # Will superset - soon.
         
     def __init__(self, sec_key:str='DEFAULT'):
         if sec_key not in Enigma.PROTOCOL_KEYS:
@@ -78,8 +78,22 @@ class Enigma:
         which = Enigma.PROTOCOL_DATA[self.security]
         if not which:
             return -1
-        return which[0]      
+        return which[0]
     
+    def encrypt(self, data:str)->str:
+        '''Create a self-identifying encryption.'''
+        token = f'.#[{self.security}]$.'
+        return token + self.en(data) + token
+    
+    def decrypt(self, data:str)->str:
+        '''Decrypt a self-identified encryption.'''
+        token = f'.#[{self.security}]$.'
+        cols = data.split(token)
+        match len(cols):
+            case 2|3:
+                return self.de(cols[1])
+        return data
+
     def en(self, data:str)->str:
         '''Encode the string, if possible. Returns unmodified string if protocol is not available.'''
         match self.identify():
@@ -140,6 +154,12 @@ def test_cases(debug=False):
         content = spaces + sec + spaces + sec + spaces
         if not test.de(test.en(content)) == content:
             raise RssException(f"Unable to cypher {sec}.")
+    
+        for dsample in responses:
+            zcry = test.encrypt(dsample)
+            zcry2 = test.decrypt(zcry)
+            if not dsample == zcry2: 
+                raise RssException(f"Unable to round-trip {sec}.")       
     
     print('Testing Success.')
 

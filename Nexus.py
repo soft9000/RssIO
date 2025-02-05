@@ -65,7 +65,7 @@ class RSSSite:
                 _dict = UrlParser.parse(rss.link)
                 scheme =  _dict['scheme']; site = _dict['site']
                 if scheme and site:
-                    self.url = _dict['scheme'] + "://" + _dict['site']
+                    self.url = scheme + "://" + site
         except:
             pass
     
