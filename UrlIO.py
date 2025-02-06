@@ -31,7 +31,7 @@ class UrlParser:
 
     @staticmethod
     def parse(url)->dict:
-        '''Always returns a DEFAULT_FIELDS. Any `None`` field therin indicates failure.'''
+        '''Always returns a DEFAULT_FIELDS. Any `None`` field therein indicates failure.'''
         result = dict(UrlParser.DEFAULT_FIELDS)
         if not url:
             return result

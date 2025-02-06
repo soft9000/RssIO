@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # Nexus.py: Manage a site's RSS feed, templates, and more.
 # Rev 0.07
-# Status: R&D.
+# Status: Testing Success.
 
 # 2025/01/24: Created + shared at https://github.com/soft9000/RssIO
 
@@ -58,6 +58,9 @@ class RSSSite:
         nexus_folder.assign(FileTypes.home(root_folder, 'input'), FileTypes.home(root_folder, 'output'), FileTypes.home(root_folder, 'templates'))
         default_template = FileTypes.home(nexus_folder.template_dir, FileTypes.DEFAULT_FILE_TEMPLATE)
         self.nexus = RSSNexus(nexus_folder, RssTemplateFile(default_template))
+        meta = ContentFile.JSON_FIELD_SET
+        meta['link'] = FileTypes.home(self.url, RSSSite.RSS_NODE)
+        self.nexus.set_meta(RSSItemMeta(meta))
         self.rss_file = FileTypes.home(self.nexus.nexus_folders.out_dir, RSSSite.RSS_NODE)
         try:
             rss = RSSFeed.load(self.rss_file)
@@ -68,6 +71,18 @@ class RSSSite:
                     self.url = scheme + "://" + site
         except:
             pass
+    
+    @staticmethod
+    def is_url(site_url:str)->bool:
+        '''Check to see if a string can be used as an RSSSite.'''
+        return not RSSSite.get_folder_for(site_url) is None
+    
+    @staticmethod
+    def get_folder_for(site_url:str)->str:
+        '''Get the base directory name for an RSSSite. None if unable.'''
+        _dict = UrlParser.parse(site_url)
+        return _dict['site']
+
     
     @staticmethod
     def equals(a, b)->bool:
@@ -81,8 +96,28 @@ class RSSSite:
         if isinstance(item, NexusFile):
             return self.nexus.add_item(item)
         return False
+    
+    def cf_create_default(self)->ContentFile:
+        '''Create a topic template in the input folder. Item is NOT added to the RSS Feed.'''
+        node = time.strftime('%Y.%j.%H.%M.%S',time.localtime()) + ContentFile.FILE_TYPE
+        file = ContentFile(FileTypes.home(self.nexus.nexus_folders.in_dir, node))
+        data = ContentFile.JSON_FIELD_SET
+        data['link'] = FileTypes.home(self.url, node)
+        if not file.write_json(data):
+            return None
+        # Please do NOT add this new content placholder to the Nexus RSS items - will be officially 
+        # added to the RSS feed when the input is merged.
+        return file
+        
+    def cf_list(self)->list:
+        '''Collect every ContentFile in the input folder.'''
+        results = []
+        for node in os.listdir(self.nexus.nexus_folders.in_dir):
+            if node.endswith(FileTypes.FT_IN):
+                results.append(ContentFile(FileTypes.home(self.nexus.nexus_folders.in_dir, node)))
+        return results
 
-    def create_input_file(self, node, security=None)->str:
+    def cf_create(self, node, security=None)->str:
         '''Create + place a node into the input folder. Content default and file suffix assured. '''
         if not node or not self.folders_exist():
             return None
@@ -184,10 +219,12 @@ class RSSSite:
             for key in Enigma.PROTOCOL_KEYS:
                 dev = 'unsupported' if Enigma.PROTOCOL_DATA[key][2] == None else 'supported'
                 fh.write(f"\t{key:^10} is presently {dev}.\n")
+        if not self.nexus.generate(self.url, True):
+            return False
         return os.path.exists(readme)
     
-    def generate(self)->bool:
-        '''Gentere the RSS feed, as well as any final content.'''
+    def update(self)->bool:
+        '''Re-generate the RSS feed, as well as any final content.'''
         # STEP: Merge the template with the input topic.
         feed = self.read_feed()
         if not feed:
@@ -213,6 +250,7 @@ class RSSSite:
         '''Read an instance of the RSSFeed, if found.'''
         self.nexus.rss_channel =  RSSFeed.load(self.rss_file)
         return self.nexus.rss_channel  # none is ok
+
     
 def test_cases(debug=False):
     print(f"***** Testing Module {__name__}.")
@@ -249,7 +287,7 @@ def test_cases(debug=False):
 
     # STEP: Basic RSS Site UPDATE
     for node in 'foo', 'foo' + FileTypes.FT_IN:
-        icfile = site.create_input_file(node)
+        icfile = site.cf_create(node)
         if not icfile or not os.path.exists(icfile):
             raise RssException("Input file creation failure 1.")
         
@@ -262,8 +300,9 @@ def test_cases(debug=False):
 
     # STEP: Complex content creations (secured)   
     from SecIO import Enigma
+
     for node in Enigma.PROTOCOL_KEYS:
-        icfile = site.create_input_file(node,security=node)
+        icfile = site.cf_create(node,security=node)
         if not icfile or not os.path.exists(icfile):
             raise RssException("Input file creation failure 2.")
         
@@ -277,7 +316,7 @@ def test_cases(debug=False):
         if not site.add_item(NexusFile(icfile)):
             raise RssException(f"Unable to add {icfile} content to {site.rss_file}.")
 
-    if not site.generate():
+    if not site.update():
         raise RssException(f"Unable to re-create {site.rss_file}")
     
     # STEP: Remove Test Site / Reset Test Case

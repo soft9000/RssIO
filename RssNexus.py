@@ -206,6 +206,7 @@ class NexusFolder:
         return './' + FileTypes.SEP.join(nodes)    # parent is best
 
 
+from RssItemMeta import RSSItemMeta
 from RssExceptions import RssException
 class RSSNexus:
     ''' The RSSNexus is the heart of the RSS feed generator. '''
@@ -225,7 +226,7 @@ class RSSNexus:
         ''' See if the Nexus folders exist. '''
         return self.nexus_folders.exists()
     
-    def set_meta(self, rss_feed:RSSItemSecured)->bool:
+    def set_meta(self, rss_feed:RSSItemMeta)->bool:
         '''Copy-in the metadata (isa RSSFeed!) that this channel Nexus will use - no items, please.'''
         if rss_feed and rss_feed.is_robust():
             self.rss_channel = rss_feed

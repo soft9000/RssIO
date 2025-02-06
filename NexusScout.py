@@ -5,16 +5,20 @@
 # Status: R&D.
 import os
 
+from UrlIO import UrlParser
 from Files import FileTypes
 from Content import ContentFile
 from Nexus import RSSSite
 
+
 def locate_sites(root=ContentFile.ALL_PROJECTS, nexi=RSSSite.RSS_NODE)->list:
-    '''Look for RSS files. Returns a list of RSSSite if any located in `root.` Empty list if none located..'''
+    '''Look for RSS files. Returns a list of RSSSite if any located in `root.` Empty list if none found..'''
     results = []
     if not root or not nexi:
         return results
     root = FileTypes.fsdetox(root)
+    if not root.find(':') == -1:
+        root = RSSSite.get_folder_for(root)
     for zdir, _, files in os.walk(root):
         if zdir == root: continue
         for file in files:
@@ -24,6 +28,21 @@ def locate_sites(root=ContentFile.ALL_PROJECTS, nexi=RSSSite.RSS_NODE)->list:
                     continue
                 results.append(RSSSite(zdir.replace('/output','')))
     return results
+
+
+def locate_site(url:str, root=ContentFile.ALL_PROJECTS, nexi=RSSSite.RSS_NODE)->RSSSite:
+    '''Check for a specific RSSSite.'''
+    if not RSSSite.is_url(url):
+        return None
+    _dict = UrlParser.parse(url)
+    zsite = _dict['site']
+    if zsite:
+        sites = locate_sites(root, nexi)
+        for site in sites:
+            if zsite.lower() in site.url.lower():
+                return site
+    return False
+
 
 def test_cases(debug=False):
     from RssExceptions import RssException
