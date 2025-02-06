@@ -57,5 +57,9 @@ If you want to support the effort, I seek no donations. Instead, simply feel fre
 
 You can also encourage the effort at https://ko-fi.com/randallnagy
 
-Thanks!
+Happy 'Bloogin!
+
+🐵🛡️🙊🙈🙉🛡️🐵
+
+
 
