@@ -134,6 +134,8 @@ class RSSSite:
         meta['link'] = FileTypes.home(self.url, core + FileTypes.FT_OUT)
         if not cf.write_json(meta):
             return None
+        # Please do NOT add any new content file to the Nexus RSS items - will be officially 
+        # added to the RSS feed when the input is merged.
         return cf.filename
 
     def rmtree(self):

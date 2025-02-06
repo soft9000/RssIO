@@ -19,6 +19,7 @@ def lprint(msg:str, level=logging.INFO):
     print(msg)
     logging.log(level, msg)
 
+
 def create(args):
     if not args.site:
         print("Error: Site URL is required for RssIO site creation.")
@@ -38,6 +39,7 @@ def create(args):
     print(f'See the README.txt file within that folder for more information.')
     return True
 
+
 def list(args):
     aite = NexusScout.locate_sites(args.site)
     if not aite:
@@ -47,6 +49,7 @@ def list(args):
     for i, line in enumerate(aite,1):
         print(f"[{i:^4}] {line.url}")
     return True
+
 
 def topic(args):
     if not args.site:
@@ -60,7 +63,7 @@ def topic(args):
     if not filename:
         lprint(f"Error: Unable to create topic template for {args.site}.")
         return False
-    lprint(f"Success: Merged content generated for {args.site}.")
+    lprint(f"Success: Default input topic generated for {args.site}.")
     return True
 
 
@@ -79,7 +82,7 @@ def merge(args):
     return True
     
     
-def mainloop():
+def main():
     '''Basic TUI R&D.'''
     parser = argparse.ArgumentParser(description='Manage Really Simple Syndication (R.S.S) Feeds.')
     parser.add_argument('operation', choices=['create', 'list', 'merge', 'topic'], help='RSS operations')
@@ -100,15 +103,26 @@ def mainloop():
         return merge(args)
   
     parser.print_help()
+    
+def test_cases(debug=False):
+    args = argparse.ArgumentParser()
+    args.site = "http://Zite9000.org"
+    create(args)
+    list(args)
+    topic(args)
+    if not debug:
+        site = RSSSite(args.site)
+        if not site.rmtree():
+            print(f"Error: Unable to remove '{args.site}'")
+        else:
+            print("Test project successfully deleted.")
 
 
 if __name__ == '__main__':
-    debug = False
-    if debug:
-        mainloop()
+    debug = True
+    if not debug:
+        if main():
+            print("\t- Happy Blooging!")
     else:
-        args = argparse.ArgumentParser()
-        args.site = "http://test.org"
-        create(args)
-        list(args)
-        topic(args)
+        test_cases(False)
+

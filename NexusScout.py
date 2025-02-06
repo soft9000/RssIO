@@ -19,6 +19,8 @@ def locate_sites(root=ContentFile.ALL_PROJECTS, nexi=RSSSite.RSS_NODE)->list:
     root = FileTypes.fsdetox(root)
     if not root.find(':') == -1:
         root = RSSSite.get_folder_for(root)
+        if not root:
+            return results
     for zdir, _, files in os.walk(root):
         if zdir == root: continue
         for file in files:
