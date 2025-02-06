@@ -19,6 +19,8 @@ For reasons of simplicity we're assuming we've created it.
 
 Thirdly - We'll need to download, decode, and browse out content-secured 'stuff.
 
+The TUI is R&D - but **rss9000**.py is the present. GUI is on the todo.
+
 
 # A RssIO Module
 A Pythonic way to read, write, and manage as many Really Simply Syndications as possible.
@@ -57,9 +59,6 @@ If you want to support the effort, I seek no donations. Instead, simply feel fre
 
 You can also encourage the effort at https://ko-fi.com/randallnagy
 
-Happy 'Bloogin!
+Happy Bloogling!
 
 🐵🛡️🙊🙈🙉🛡️🐵
-
-
-

@@ -122,7 +122,7 @@ if __name__ == '__main__':
     debug = True
     if not debug:
         if main():
-            print("\t- Happy Blooging!")
+            print("\t- Happy Bloogling!")
     else:
         test_cases(False)
 
