@@ -15,13 +15,16 @@ from UrlIO import UrlParser
         
 
 class RSSSite:
-    '''An RssSite is designed to read any single `input` folder, skin the text using any input-defined 
-    `template` file, then place the results into a single `output` folder. Security parameters enable 
-    several built-in content protection options.
+    '''An RssSite is designed to read any single `input` folder, skin the posts using any input-defined 
+    `template` file, then place the results into a single `output` folder. Skins, templates, and even
+    add-on security protocols are post-selectable. Create your the content and let RssIO do the rest.
     
     Ready to upload to your site, the content within that `output` folder will also contain your final 
     `nexus.rss` file. Everything underneath `output` is designed to work directly underneath any web's 
     "root" location.
+    
+    Optional security parameters permit add-on content protection. Whenever an item is secured, decoders 
+    can be rapidly changed for any post, or an entire site.
     
     NOTES:
     -----
@@ -30,8 +33,8 @@ class RSSSite:
     
     (2) The default security is clear-text. Anyone waneeding (want + needing =) additional security should 
     update either this code or use one of the no-risk encodings, below. THIS PROJECT IS INTENDED FOR USE 
-    WITH PUBLIC SECURITY PROTOCOLS, ONLY. BE SURE TO UNDERSTAND THE RISK OF PRIVATELY PROTECTING YOUR CONTENT 
-    FROM GOVERNMENTAL EYES. DON'T DO ANYTHING THAT WILL LAND YOU IN PRISON!
+    WITH PUBLIC SECURITY PROTOCOLS, ONLY. BE SURE TO UNDERSTAND THE RISK OF PRIVATELY PROTECTING YOUR 
+    CONTENT FROM GOVERNMENTAL EYES. DON'T DO ANYTHING THAT WILL LAND YOU IN PRISON!
 
     Enjoy,
 
