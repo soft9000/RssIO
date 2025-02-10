@@ -86,13 +86,16 @@ class RSSSite:
         _dict = UrlParser.parse(site_url)
         return _dict['site']
 
-    
     @staticmethod
     def equals(a, b)->bool:
         '''See if the folders are the same.'''
         if a and b:
             return a.home_dir == b.home_dir
         return False
+    
+    def item_count(self)->int:
+        '''Return the number of cached input items in the nexus. Use reload() to update.'''
+        return self.nexus.item_count()
     
     def add_item(self, item:NexusFile)->bool:
         '''Add a NexusFile to the RSSSite.'''
@@ -115,9 +118,10 @@ class RSSSite:
     def cf_list(self)->list:
         '''Collect every ContentFile in the input folder.'''
         results = []
-        for node in os.listdir(self.nexus.nexus_folders.in_dir):
-            if node.endswith(FileTypes.FT_IN):
-                results.append(ContentFile(FileTypes.home(self.nexus.nexus_folders.in_dir, node)))
+        for root, _, files in os.walk(self.nexus.nexus_folders.in_dir):
+            for node in files:
+                if node.endswith(FileTypes.FT_IN):
+                    results.append(ContentFile(FileTypes.home(root, node)))
         return results
 
     def cf_create(self, node, security=None)->str:
@@ -138,7 +142,7 @@ class RSSSite:
         if not cf.write_json(meta):
             return None
         # Please do NOT add any new content file to the Nexus RSS items - will be officially 
-        # added to the RSS feed when the input is merged.
+        # added to the RSS feed when the input is merged / reload()ed.
         return cf.filename
 
     def rmtree(self):
@@ -166,9 +170,7 @@ class RSSSite:
 
     def folders_exist(self)->bool:
         ''' See if the folders exist. '''
-        if not os.path.exists(self.home_dir): 
-            return False
-        return self.nexus.exists()
+        return os.path.exists(self.home_dir) and self.nexus.exists()
     
     @staticmethod
     def get_content_file(filename:str)->ContentFile:
@@ -239,16 +241,17 @@ class RSSSite:
         return True
 
     def reload(self)->int:
-        '''Populate the feed with any input / json topical information.'''
+        '''Reload the feed with any topics presently within the input folder.'''
         self.nexus.nexus_files.clear()
-        for file in os.listdir(self.nexus.nexus_folders.in_dir):
-            if file.endswith(ContentFile.FILE_TYPE):
-                # STEP: Get the meta from the topic / json file.
-                fqfilename = FileTypes.home(self.nexus.nexus_folders.in_dir, file)
-                sec_item = self.load_item(fqfilename)
-                if not sec_item:
-                    raise RssException(f"Unable to import {fqfilename}.")
-                self.nexus.add_item(NexusFile(fqfilename))  # uses common meta
+        for root, _, files in os.walk(self.nexus.nexus_folders.in_dir):
+            for file in files:
+                if file.endswith(ContentFile.FILE_TYPE):
+                    # STEP: Get the meta from the topic / json file.
+                    fqfilename = FileTypes.home(root, file)
+                    sec_item = self.load_item(fqfilename)
+                    if not sec_item:
+                        raise RssException(f"Unable to import {fqfilename}.")
+                    self.nexus.add_item(NexusFile(fqfilename))  # uses common meta
         return self.nexus.item_count()
 
     def read_feed(self)->RSSFeed:
@@ -271,6 +274,7 @@ def test_cases(debug=False):
   </channel>
 </rss>"""
     site = RSSSite(tsite)
+    site.rmtree()
     if not site.setup():
         raise RssException('Site creation failure.')
     if not site.rss_replace(rss_str):
@@ -302,7 +306,28 @@ def test_cases(debug=False):
         os.remove(icfile)
         if os.path.exists(icfile):
             raise RssException(f'Unable to remove {icfile}.')
-
+    
+    if site.reload():
+        raise RssException(f"Site '{site.url}' should be empty.")
+   
+    # STEP: Assert basic content creation / site reloading protocol & assumptions 
+    topics = "abcdefg"
+    for topic in topics:
+        site.cf_create(topic + FileTypes.FT_IN)
+    if site.item_count():
+        raise RssException(f"Protocol: Site '{site.url}' should not have been updated after cf_create().")
+    if not site.reload() == len(topics):
+        raise RssException(f"Site '{site.url}' should have been reloaded with {len(topics)} topics.")
+    for cfile in site.cf_list():
+        if not cfile.exists():
+            raise RssException(f"Site '{site.url} {cfile.filename}' not found.")
+    
+    # STEP: Hierarchical / nested content creations (not secured)    
+    # TODO: Sub-folder content creations
+    folders = '1234'
+    for folder in folders:
+        pass
+    
     # STEP: Complex content creations (secured)   
     from SecIO import Enigma
 

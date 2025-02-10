@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-# RSSNexus.py: An multi=template RSS content skinner + static feed burner.
+# RSSNexus.py: An multi-template RSS content skinner + static feed burner.
 # Rev 0.05
 # Status: Work in progress.
 
@@ -261,7 +261,7 @@ class RSSNexus:
         return True
 
     def generate(self, web_root_url, protect=True) -> bool:
-        ''' Generate the RSS feed and z static site. Raises an RssException in error. '''
+        ''' Generate the RSS feed and static site. Raises an RssException on error. '''
         self.validate()
         rss_feed = RSSFeed()
         rss_feed.assign(self.rss_channel.title, self.rss_channel.description, self.rss_channel.link, self.rss_channel.pubDate)
