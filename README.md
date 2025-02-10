@@ -19,7 +19,7 @@ For reasons of simplicity we're assuming we've created it.
 
 Thirdly - We'll need to download, decode, and browse out content-secured 'stuff.
 
-The TUI is R&D - but **bloogle**.py is the present. GUI is on the todo.
+The TUI is R&D - but **rss9000**.py is the present. GUI is on the todo.
 
 
 # A RssIO Module
@@ -59,6 +59,6 @@ If you want to support the effort, I seek no donations. Instead, simply feel fre
 
 You can also encourage the effort at https://ko-fi.com/randallnagy
 
-Happy Bloogling!
+Happy Rssing!
 
 🐵🛡️🙊🙈🙉🛡️🐵
