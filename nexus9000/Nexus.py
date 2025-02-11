@@ -9,22 +9,24 @@ import os
 import shutil
 from RssIO import *
 from RssNexus import *
-from Content import ContentFile
+from Content import ContentFile, ContentFolder
 from SecIO import Enigma
 from UrlIO import UrlParser
         
 
 class RSSSite:
     '''An RssSite is designed to read any single `input` folder, skin the posts using any input-defined 
-    `template` file, then place the results into a single `output` folder. Skins, templates, and even
-    add-on security protocols are post-selectable. Create your the content and let RssIO do the rest.
+    `template` file, then place the results into a single `output` folder.
     
     Ready to upload to your site, the content within that `output` folder will also contain your final 
     `nexus.rss` file. Everything underneath `output` is designed to work directly underneath any web's 
     "root" location.
     
+    Skins, templates, and even add-on security protocols are per-post-selectable; create your content 
+    and let RssIO do the rest.
+    
     Optional security parameters permit add-on content protection. Whenever an item is secured, decoders 
-    can be rapidly changed for any post, or an entire site.
+    can be easily changed for any post, or an entire site.
     
     NOTES:
     -----
@@ -57,7 +59,7 @@ class RSSSite:
                 root_folder = FileTypes.detox(ContentFile.ALL_PROJECTS) + '/' + _dict['site']
         self.home_dir = root_folder
         self.url = site_url  
-        nexus_folder = NexusFolder()
+        nexus_folder = NexusFolders()
         nexus_folder.assign(FileTypes.home(root_folder, 'input'), FileTypes.home(root_folder, 'output'), FileTypes.home(root_folder, 'templates'))
         default_template = FileTypes.home(nexus_folder.template_dir, FileTypes.DEFAULT_FILE_TEMPLATE)
         self.nexus = RSSNexus(nexus_folder, RssTemplateFile(default_template))
@@ -93,8 +95,15 @@ class RSSSite:
             return a.home_dir == b.home_dir
         return False
     
+    def home(self, node:str, base=None):
+        '''Detox and place a node into a base location. Default is the input location.'''
+        if not base:
+            base = self.nexus.nexus_folders.in_dir
+        return FileTypes.home(base, node)
+    
     def item_count(self)->int:
-        '''Return the number of cached input items in the nexus. Use reload() to update.'''
+        '''Return the number of cached input items in the nexus. 
+        Item is NOT added to the RSS Feed.  Use reload() to update.'''
         return self.nexus.item_count()
     
     def add_item(self, item:NexusFile)->bool:
@@ -102,19 +111,7 @@ class RSSSite:
         if isinstance(item, NexusFile):
             return self.nexus.add_item(item)
         return False
-    
-    def cf_create_default(self)->ContentFile:
-        '''Create a topic template in the input folder. Item is NOT added to the RSS Feed.'''
-        node = time.strftime('%Y.%j.%H.%M.%S',time.localtime()) + ContentFile.FILE_TYPE
-        file = ContentFile(FileTypes.home(self.nexus.nexus_folders.in_dir, node))
-        data = ContentFile.JSON_FIELD_SET
-        data['link'] = FileTypes.home(self.url, node)
-        if not file.write_json(data):
-            return None
-        # Please do NOT add this new content placholder to the Nexus RSS items - will be officially 
-        # added to the RSS feed when the input is merged.
-        return file
-        
+       
     def cf_list(self)->list:
         '''Collect every ContentFile in the input folder.'''
         results = []
@@ -123,16 +120,54 @@ class RSSSite:
                 if node.endswith(FileTypes.FT_IN):
                     results.append(ContentFile(FileTypes.home(root, node)))
         return results
+    
+    def cf_create_default(self, folder:str=None)->ContentFile:
+        '''Create an additional default date-named topic in an input folder. 
+        Item is NOT added to the RSS Feed. Use reload() to update. A unique 
+        file name will always be created. '''
+        aname = time.strftime('%Y.%j.%H.%M.%S',time.localtime())
+        node = aname + ContentFile.FILE_TYPE
+        if not folder:
+            folder=self.nexus.nexus_folders.in_dir
+        cd = ContentFolder(folder)
+        if not cd.exists() and not cd.create():
+            return None
+        file = ContentFile(FileTypes.home(folder, node))
+        data = ContentFile.JSON_FIELD_SET
+        times = 0
+        while file.exists():
+            times = times + 1;node = f"{aname}.{times}{ContentFile.FILE_TYPE}"
+            file = ContentFile(FileTypes.home(folder, node))
+        rss_link = FileTypes.home(self.url, node)
+        parts = UrlParser.parse(self.url)
+        if parts and parts['site']:
+            pos = folder.find(parts['site'])
+            if not pos == -1:
+                pos += len(parts['site'])
+                rss_link = FileTypes.home(FileTypes.home(self.url,folder[pos:]), node)
+        data['link'] = rss_link
+        if not file.write_json(data):
+            return None
+        # Please do NOT add this new content placholder to the Nexus RSS items - will be officially 
+        # added to the RSS feed when the input is merged.
+        return file
 
-    def cf_create(self, node, security=None)->str:
-        '''Create + place a node into the input folder. Content default and file suffix assured. '''
+    def cf_create(self, node, security:str=None, folder:str=None)->str:
+        '''Create + place a user-named node into an input folder.
+        Item is NOT added to the RSS Feed. Use reload() to update.'
+        Content default and the default file suffix are assured. '''
         if not node or not self.folders_exist():
             return None
         if node.find(FileTypes.SEP) != -1:
             node = node.split(FileTypes.SEP)[:-1]
         if not node.endswith(FileTypes.FT_IN):
             node += FileTypes.FT_IN
-        cf = ContentFile(FileTypes.home(self.nexus.nexus_folders.in_dir, node))
+        if not folder:
+            folder = self.nexus.nexus_folders.in_dir
+        cd = ContentFolder(folder)
+        if not cd.exists() and not cd.create():
+            return None
+        cf = ContentFile(FileTypes.home(folder, node))
         # Add as much meta as possible:
         meta = ContentFile.JSON_FIELD_SET
         if security is not None:
@@ -172,10 +207,14 @@ class RSSSite:
         ''' See if the folders exist. '''
         return os.path.exists(self.home_dir) and self.nexus.exists()
     
+    def list_content_folders(self):
+        results = []
+        for root, dirs, files in os.walk():
+            pass
+    
     @staticmethod
     def get_content_file(filename:str)->ContentFile:
-        '''Concoct + return a ContentFile from a qualified fine-name.'''
-        from Content import ContentFile
+        '''Concoct + return a ContentFile from a qualified file-name.'''
         topic = ContentFile(filename)
         if not topic.read_json():
             return None
@@ -242,8 +281,9 @@ class RSSSite:
 
     def reload(self)->int:
         '''Reload the feed with any topics presently within the input folder.'''
-        self.nexus.nexus_files.clear()
+        self.nexus.input_files.clear()
         for root, _, files in os.walk(self.nexus.nexus_folders.in_dir):
+            root = FileTypes.detox(root)
             for file in files:
                 if file.endswith(ContentFile.FILE_TYPE):
                     # STEP: Get the meta from the topic / json file.
@@ -323,10 +363,13 @@ def test_cases(debug=False):
             raise RssException(f"Site '{site.url} {cfile.filename}' not found.")
     
     # STEP: Hierarchical / nested content creations (not secured)    
-    # TODO: Sub-folder content creations
     folders = '1234'
     for folder in folders:
-        pass
+        if not site.cf_create_default(site.home(folder)):
+            raise RssException(f"Site '{site.url}': '{folder}' cf_create_default error.")
+    ftot = len(topics) + len(folders)
+    if not site.reload() == ftot:
+        raise RssException(f"Site '{site.url}' should have been reloaded with {ftot} topics.")
     
     # STEP: Complex content creations (secured)   
     from SecIO import Enigma

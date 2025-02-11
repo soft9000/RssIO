@@ -11,6 +11,15 @@ class FileTypes:
     DEFAULT_FILE_TEMPLATE   = "default" + FT_TEMPLATE
     DEFAULT_FILE_README     = 'README.txt'
     DEFAULT_FILE_RSS        = 'nexus.rss'
+    
+    @staticmethod
+    def pop(node:str, sep=SEP)->str:
+        '''Remove the last delimited node.'''
+        if node:
+            cols = node.split(sep)
+            if len(cols) > 1:
+                return sep.join(cols[:-1])
+        return node
 
     @staticmethod
     def detox(node:str, sep=SEP)->str:
@@ -20,6 +29,8 @@ class FileTypes:
             node = node[1:]
         while node and node.endswith(sep):
             node = node[:-1]
+        if sep == '/':
+            node = node.replace('\\','/')
         return node
     
     @staticmethod
@@ -75,7 +86,13 @@ def test_cases(debug=False):
     foo = FileTypes.home('zoom/////','/////bat')
     if foo != 'zoom/bat':
         raise Exception(f"Regression 00140: FileTypes.home() should be 'zoom/bat', got '{foo}'.")
-
+    
+    if FileTypes.pop('1/2/3') != '1/2':
+        raise Exception("Regression 00150: pop failure.")
+    
+    if FileTypes.pop('/1/2/3') != '/1/2':
+        raise Exception("Regression 00160: pop failure.")
+    
     print("Testing Success.")  
 
 

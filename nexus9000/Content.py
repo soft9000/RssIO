@@ -10,9 +10,10 @@ import json, time
 from Files import *
 from RssTemplate import RssTemplateFile
 from RssExceptions import RssException
+    
 
 class ContentFile:
-
+    ''' Content files are where we store content and content processing parameters.'''
     FILE_TYPE = FileTypes.FT_IN                          # Default file type for content files.
     DEFAULT_TEMPLATE = FileTypes.DEFAULT_FILE_TEMPLATE   # NOT the FILE_TYPE!
     ALL_PROJECTS = './'                                  # Location where RSS all projects should go.
@@ -77,6 +78,27 @@ class ContentFile:
             raise RssException(f"Error writing to file {self.filename}: {e}")
         
         return self.exists()
+
+
+class ContentFolder:
+    '''Content folders contain content files.'''
+    def __init__(self, dirname):
+        self.dirname = dirname
+   
+    def exists(self)->bool:
+        '''See if the ContentFolder is on the file system and is a directory.'''
+        return os.path.exists(self.dirname) and os.path.isdir(self.dirname)
+    
+    def create(self)->bool:
+        '''Try to create the content folder iff not found.'''
+        if self.exists():
+            return True
+        try:
+            os.makedirs(self.dirname)
+            return self.exists() # observed.
+        except:
+            return False
+
 
 
 def test_cases(debug=False):
