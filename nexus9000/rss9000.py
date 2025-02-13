@@ -61,7 +61,7 @@ def create(args):
 
 def slist(args):
     '''Locate and list web sites under {ContentFile.ALL_PROJECTS}.'''
-    aite = NexusScout.locate_sites(args.site)
+    aite = NexusScout.locate_sites()
     if not aite:
         print(f"No sites defined in `{ContentFile.ALL_PROJECTS}` ...")
         return True # yes - op is ok.
@@ -171,6 +171,7 @@ def main():
     print('~' * 12)
     mainloop()
     print('~' * 12)
+
     
 def test_cases(debug=False):
     args = argparse.ArgumentParser()

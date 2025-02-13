@@ -47,6 +47,12 @@ def locate_site(url:str, root=ContentFile.ALL_PROJECTS, nexi=RSSSite.RSS_NODE)->
                 return site
     return False
 
+    
+def remove_all_sites():
+    for site in locate_sites():
+        site.rmtree()
+    return len(locate_sites()) == 0
+
 
 def test_cases(debug=False):
     from RssExceptions import RssException
@@ -54,6 +60,9 @@ def test_cases(debug=False):
     
     print(f"***** Testing Module {__name__}.")
     # STEP: Default Site Creation + Load + Existance
+    
+    if remove_all_sites() == False:
+        raise RssException("Unable to remove leftover sites.")
 
     for dum in 'testa', 'TestB', 'tEStC':
         tsite = f'http://www.{dum}.org'
