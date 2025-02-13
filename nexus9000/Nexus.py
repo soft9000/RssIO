@@ -129,10 +129,12 @@ class RSSSite:
         node = aname + ContentFile.FILE_TYPE
         if not folder:
             folder=self.nexus.nexus_folders.in_dir
+        elif self.nexus.nexus_folders.in_dir not in folder:
+            folder = FileTypes.home(self.nexus.nexus_folders.in_dir, folder)
         cd = ContentFolder(folder)
         if not cd.exists() and not cd.create():
             return None
-        file = ContentFile(FileTypes.home(folder, node))
+        file = ContentFile(self.home(node, folder))
         data = ContentFile.JSON_FIELD_SET
         times = 0
         while file.exists():

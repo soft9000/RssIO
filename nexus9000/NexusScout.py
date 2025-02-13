@@ -11,10 +11,12 @@ from Content import ContentFile
 from Nexus import RSSSite
 
 
-def locate_sites(root=ContentFile.ALL_PROJECTS, nexi=RSSSite.RSS_NODE)->list:
-    '''Look for RSS files. Returns a list of RSSSite if any located in `root.` Empty list if none found..'''
+def locate_sites(root=ContentFile.ALL_PROJECTS, rss_file=RSSSite.RSS_NODE)->list:
+    '''Look for RSS files in the output location. 
+    Returns a list of RSSSite if any located in `root.` 
+    Empty list if none found..'''
     results = []
-    if not root or not nexi:
+    if not root or not rss_file:
         return results
     root = FileTypes.fsdetox(root)
     if not root.find(':') == -1:
@@ -24,7 +26,7 @@ def locate_sites(root=ContentFile.ALL_PROJECTS, nexi=RSSSite.RSS_NODE)->list:
     for zdir, _, files in os.walk(root):
         if zdir == root: continue
         for file in files:
-            if file == nexi:
+            if file == rss_file:
                 zdir = FileTypes.fsdetox(zdir)
                 if zdir.find('/output') == -1:
                     continue
