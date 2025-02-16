@@ -10,6 +10,10 @@ Thus the mission of this **Nexus 9000 Project** is to boldly allow 'wee content 
 
 Indeed, optionally protecting our 'stuff from marauding 'haters is a decent bonus of RssIO; I've herein cobbled together a very customizable 'special sauce' designed to help us create and share our own speech-sharing strategies.
 
+## A Nexus Registry
+The `FileRegistry.py` demonstrates an easy way to register your RSS Site(s.) Run the .register() of the Registry class then merge your
+URLs to the registry.txt file in this Project. See the test case for more information?
+
 **Note:** THE RssIO PROJECT IS INTENDED FOR USE WITH PUBLIC SECURITY PROTOCOLS. BE SURE TO UNDERSTAND THE RISK OF PRIVATELY PROTECTING YOUR CONTENT FROM GOVERNMENTAL EYES. DON'T DO ANYTHING THAT WILL LAND YOU IN PRISON.
 
 ## zSupport?
