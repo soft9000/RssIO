@@ -8,6 +8,7 @@ import argparse
 from Content import ContentFile
 import NexusScout
 from Nexus import RSSSite
+from RssRegistry import FreeRegistry
 from RssItemSecured import RSSItemSecured
 
 logfile = ContentFile.ALL_PROJECTS + "rssio.log"
@@ -38,7 +39,7 @@ def lprint(msg:str, level=logging.INFO):
     logging.log(level, msg)
 
 
-def create(args):
+def create(args)->bool:
     '''Create a web site in {ContentFile.ALL_PROJECTS}.'''
     if not args.site:
         print("Error: Site URL is required for RssIO site creation.")
@@ -59,7 +60,7 @@ def create(args):
     return True
 
 
-def slist(args):
+def slist(args)->bool:
     '''Locate and list web sites under {ContentFile.ALL_PROJECTS}.'''
     aite = NexusScout.locate_sites()
     if not aite:
@@ -71,7 +72,7 @@ def slist(args):
     return True
 
 
-def topic(args,topic:str=None):
+def topic(args,topic:str=None)->bool:
     '''Create an input topic file.'''
     if not args.site:
         print("Error: Site URL is required for RssIO topic generation.")
@@ -90,7 +91,7 @@ def topic(args,topic:str=None):
     return True
 
 
-def merge(args):
+def merge(args)->bool:
     '''Convert site input to site output.'''
     if not args.site:
         print("Error: Site URL is required for RssIO content generation.")
@@ -106,6 +107,21 @@ def merge(args):
     return True
 
 
+def register(args)->bool: # TODO: TUI test this!
+    '''Add your site(s) to the RssIO Registry File.'''
+    if False:
+        info = FreeRegistry().register()
+        if info[0]:
+            lprint(info[1])
+            return True
+        else:
+            print(info[1])
+            return False
+    else:
+        print("Toto - Work in progress.")
+        return False
+
+
 def mainloop():
     print("Site Management Loop")
     ops = {
@@ -113,6 +129,7 @@ def mainloop():
         "List":[slist, False],
         "Topic":[topic, True],
         "Merge":[merge,True],
+        "Register":[register,True],
         "Quit":[quit, False] # always last, please
     }
     while True:
@@ -148,7 +165,7 @@ def mainloop():
 def main():
     '''Basic TUI'''
     parser = argparse.ArgumentParser(description='Manage Really Simple Syndication (R.S.S) Feeds.')
-    parser.add_argument('--op', choices=['create', 'list', 'merge', 'topic'], help="Site Management 'Ops")
+    parser.add_argument('--op', choices=['create', 'list', 'merge', 'topic', 'register'], help="Site Management 'Ops")
     parser.add_argument('--site', default=None, help='Site name / URL')
 
     args = parser.parse_args()
@@ -164,13 +181,17 @@ def main():
 
     elif args.op == 'merge':
         return merge(args)
-  
+
+    elif args.op == 'register':
+        return merge(args)
+      
     parser.print_help()
     
     # Just loop it:
     print('~' * 12)
-    mainloop()
+    br = mainloop()
     print('~' * 12)
+    return br
 
     
 def test_cases(debug=False):

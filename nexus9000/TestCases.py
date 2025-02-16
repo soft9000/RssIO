@@ -10,6 +10,7 @@ from RssNexus       import test_cases as tc_RssNexus
 from NexusScout     import test_cases as tc_NexusScout
 from Nexus          import test_cases as tc_NexusProject
 from rss9000        import test_cases as tc_TUI
+from RssRegistry    import test_cases as tc_Registry
 
 tc_UrlIO()
 tc_SecIO()
@@ -20,3 +21,4 @@ tc_RssNexus()
 tc_NexusProject()
 tc_NexusScout()
 tc_TUI()
+tc_Registry()
