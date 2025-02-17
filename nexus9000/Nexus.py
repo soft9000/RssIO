@@ -28,6 +28,10 @@ class RSSSite:
     Optional security parameters permit add-on content protection. Whenever an item is secured, decoders 
     can be easily changed for any post, or an entire site.
     
+    Keywords are an extension to the RSS 2 Standard. Keywords are used to help others locate topics of 
+    interest. To help others discover your keywords add your site to the resitery.txt file 
+    at https://github.com/soft9000/RssIO/blob/main/nexus9000/registry.txt
+    
     NOTES:
     -----
     (1) A default document template / content skinner is provided. Feel free to change it and / or create 

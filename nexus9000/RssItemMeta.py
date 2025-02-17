@@ -12,7 +12,7 @@ class RSSItemMeta:
                     user_json[key] = ContentFile.JSON_FIELD_SET[key]
         self.json = dict(user_json)
     
-    def assign(self,title, description, link, pubDate=None):
+    def assign(self, title, description, link, pubDate=None, keywords=None):
         '''Assign values - None becomes an empty string.'''
         if title is None:
             title=''
@@ -25,7 +25,10 @@ class RSSItemMeta:
         self.json['link']=link
         if pubDate is None:
             pubDate = ''
-        self.json['pubDate']=pubDate        
+        self.json['pubDate']=pubDate
+        if keywords is None:
+            keywords = ''
+        self.json['keywords']=keywords         
 
     def is_robust(self):
         ''' A simple test to see if the item is ready for prime time.'''
@@ -75,3 +78,12 @@ class RSSItemMeta:
     def pubDate(self, value):
         if value is None: value=''
         self.json['pubDate'] = value
+
+    @property
+    def keywords(self):
+        return self.json['keywords']
+
+    @keywords.setter
+    def keywords(self, value):
+        if value is None: value=''
+        self.json['keywords'] = value

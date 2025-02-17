@@ -16,11 +16,12 @@ class ContentFile:
     ''' Content files are where we store content and content processing parameters.'''
     FILE_TYPE = FileTypes.FT_IN                          # Default file type for content files.
     DEFAULT_TEMPLATE = FileTypes.DEFAULT_FILE_TEMPLATE   # NOT the FILE_TYPE!
-    ALL_PROJECTS = './'                                  # Location where RSS all projects should go.
+    ALL_PROJECTS = './'                                  # Location where all RSS projects should go.
 
     JSON_FIELD_SET = {
         "title": "Sample Title",
         "description": "Sample Description",
+        "keywords":"",
         "template": DEFAULT_TEMPLATE,
         "pubDate": time.ctime(),
         "security": "DEFAULT",

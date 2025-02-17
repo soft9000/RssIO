@@ -67,6 +67,8 @@ class RSSFeed(RSSItemMeta):
     def to_string(self):
         '''Converts an entire RSS feed - channel as well as any topics - to a string.'''
         rss = ET.Element('rss', version='2.0')
+        #if self.keywords: (TODO)
+        #    rss = ET.Element('rssio', version='1.0')
         channel = ET.SubElement(rss, 'channel')
         ET.SubElement(channel, 'title').text = self.title
         ET.SubElement(channel, 'link').text = self.link
@@ -76,6 +78,8 @@ class RSSFeed(RSSItemMeta):
         for item in self._items:
             item_elem = ET.SubElement(channel, 'item')
             ET.SubElement(item_elem, 'title').text = item.title
+            if self.keywords:
+                ET.SubElement(item_elem,'keywords').text = item.keywords
             ET.SubElement(item_elem, 'link').text = item.link
             ET.SubElement(item_elem, 'description').text = item.description
             ET.SubElement(item_elem, 'pubDate').text = item.pubDate
@@ -113,12 +117,13 @@ class RSSFeed(RSSItemMeta):
             inst.title = item.find('title').text
             inst.link = item.find('link').text
             inst.description = item.find('description').text
+            keywords = item.find('keywords')
+            if not keywords is None:
+                inst.keywords = keywords.text
             pubDate = item.find('pubDate')
-            if pubDate is None:
-                feed._items.append(inst) # use today's date
-            else:
+            if not pubDate is None:
                 inst.pubDate = pubDate.text
-                feed._items.append(inst)
+            feed._items.append(inst)
         return feed
 
     @staticmethod

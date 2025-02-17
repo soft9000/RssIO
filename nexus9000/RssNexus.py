@@ -269,7 +269,7 @@ class RSSNexus:
         ''' Generate the RSS feed and static site. Raises an RssException on error. '''
         self.validate()
         rss_feed = RSSFeed()
-        rss_feed.assign(self.rss_channel.title, self.rss_channel.description, self.rss_channel.link, self.rss_channel.pubDate)
+        rss_feed.assign(self.rss_channel.title, self.rss_channel.description, self.rss_channel.link, self.rss_channel.pubDate, self.rss_channel.keywords)
         for ss, input_file in enumerate(self.input_files):
             out_dir = self.nexus_folders.out_dir
             out_file = input_file.content_file.replace(FileTypes.FT_IN,FileTypes.FT_OUT) # change type

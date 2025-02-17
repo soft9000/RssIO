@@ -17,7 +17,7 @@ class RssTemplateFile:
         self.token = template_token
     
     @staticmethod
-    def parse(filename:str, token:str=TEMPLATE_TOKEN):
+    def parse(filename:str, token:str=TEMPLATE_TOKEN)->str|None:
         '''Instantiate a template from an external template file.'''
         try:
             if filename and os.path.exists(filename):
@@ -29,7 +29,7 @@ class RssTemplateFile:
         return None
         
     
-    def exists(self):
+    def exists(self)->bool:
         '''See if the template file name esists. '''
         try:
             if self.filename:
@@ -48,7 +48,7 @@ class RssTemplateFile:
         except:
             return False
     
-    def read_template_file(self)->str:
+    def read_template_file(self)->str|None:
         '''Read the template file. WYSIWYG'''
         try:
             with open(self.filename, 'r') as file:
@@ -56,7 +56,7 @@ class RssTemplateFile:
         except:
             return None
 
-    def merge_with(self, data:str)->str:
+    def merge_with(self, data:str)->str|None:
         '''Merge the data with the template by reading + replacing the 
         token with the data.'''
         try:
