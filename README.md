@@ -1,6 +1,8 @@
 ## Speak-Easy
 The mission of this **Nexus 9000 Project** is to boldly allow 'wee content creators to move our communities away from all **astoundingly** untrustworthy content-aggregators. *-- Let alone to protect our friends against so many bovine, would-be woes and foes.* (I mean this all *nicely*, of course!)
 
+The idea is simple: Obfuscate content, share / sell the key, and enjoy the 'Enigma.
+
 Optionally protecting our 'stuff from marauding 'haters is a decent bonus of RssIO; I've herein cobbled together a very customizable 'special sauce' designed to help us create and share our own speech-sharing strategies. 
 
 Growing our community is the real opportunity. For the moment the easiest way to share our sites with others is to simply add any URLs to this project's registry.txt file. --We'll get more sophisticated if and as that registry fills.
