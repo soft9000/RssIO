@@ -3,6 +3,8 @@ The mission of this **Nexus 9000 Project** is to boldly allow 'wee content creat
 
 The idea is simple: Obfuscate content, share / sell the key, and enjoy the 'Enigma.
 
+![PyDAO Project Logo](https://github.com/soft9000/RssIO/blob/main/_graphics/RssIoNexus.png)
+
 Optionally protecting our 'stuff from marauding 'haters is a decent bonus of RssIO; I've herein cobbled together a very customizable 'special sauce' designed to help us create and share our own speech-sharing strategies. 
 
 Growing our community is the real opportunity. For the moment the easiest way to share our sites with others is to simply add any URLs to this project's registry.txt file. --We'll get more sophisticated if and as that registry fills.
