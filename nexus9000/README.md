@@ -1,13 +1,15 @@
 # Overview
 From destroying families for lack of a pronoun to the destruction of Canadian truck-drivers for a right to protest, can anyone yet doubt that we've seen the ugliest side of pop culture?
 
-Not since the rise of Nazi Germany, the CCP, China bordering Koreas & Vietnams, the former Soviet Union - or other socialist '[Utopias](https://www.amazon.com/dp/B0DMLBN65W)' - has our planet witnessed so much media and state-hate, friends!
+Not since the rise of Nazi Germany, the CCP, China bordering Koreas & Vietnams, the former Soviet Union - or other socialist '[Utopias](https://www.amazon.com/dp/B0DMLBN65W)' - has our planet witnessed so much media and State-hate friends!
 
 Most of us abandoning the social medias the moment our own governments decided to turn freedom's posts against anyone ... but who’s community were those friends, anyway?
 
 So this project is a way to share, serve, and protect our content. Of the modules herein, the RssNexus Module is the easiest path for the 'share' and the 'serve.'
 
 Protecting our 'stuff from marauding 'haters is where we've cobbled together a very customizable special sauce. The Nexus Module is all about sharing our content with our friends, not our woes!
+
+Here is a [video overview](https://ko-fi.com/post/Powerfull-Legal-Encryptions-Z8Z61Q9RR5]) of the basic idea?
 
 # Operations
 Three different workflows here:
@@ -26,10 +28,7 @@ The TUI is R&D - but **rss9000**.py is the present. GUI is on the todo.
 A Pythonic way to read, write, and manage as many Really Simply Syndications as possible.
 
 # A SecIO Module
-Pluggable security protocols. Horrifically updatable.
-
-NOTE: THIS PROJECT IS INTENDED FOR USE WITH PUBLIC SECURITY PROTOCOLS. BE SURE TO UNDERSTAND THE RISK OF 
-PRIVATELY PROTECTING YOUR CONTENT FROM GOVERNMENTAL EYES. DON'T DO ANYTHING THAT WILL LAND YOU IN PRISON.
+Pluggable security protocols. Horrifically updatable. (*)
 
 # A RssNexus Module
 A faster / less error prone way to  skin & RSS our content. Perfect for static websites.
@@ -62,3 +61,7 @@ You can also encourage the effort at https://ko-fi.com/randallnagy
 Happy Rssing!
 
 🐵🛡️🙊🙈🙉🛡️🐵
+
+(*) NOTE: THIS PROJECT IS INTENDED FOR USE WITH PUBLIC SECURITY PROTOCOLS. BE SURE TO UNDERSTAND THE RISK OF 
+PRIVATELY PROTECTING YOUR CONTENT FROM GOVERNMENTAL EYES. DON'T DO ANYTHING THAT WILL LAND YOU IN PRISON.
+
